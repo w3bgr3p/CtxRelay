@@ -32,7 +32,7 @@ static class Swapper
         using (var p = Process.Start(psi)!)
         {
             var output = p.StandardOutput.ReadToEnd() + p.StandardError.ReadToEnd();
-            if (!p.WaitForExit(30_000)) throw new TimeoutException("taskkill не завершился за 30s");
+            if (!p.WaitForExit(30_000)) throw new TimeoutException(Localization.Text(Message.KillTimeout));
             Log.Write($"[kill] taskkill rc={p.ExitCode} {Log.Short(output, 200)}");
         }
         var deadline = DateTime.UtcNow.AddSeconds(15);
@@ -41,7 +41,7 @@ static class Swapper
             if (CountAlive() == 0) { Thread.Sleep(1000); return; }   // даём ОС отпустить хэндлы
             Thread.Sleep(500);
         }
-        throw new InvalidOperationException($"{ProcessName}.exe жив через 15s: процессов={CountAlive()}");
+        throw new InvalidOperationException(Localization.Text(Message.ProcessStillRunning, ProcessName, CountAlive()));
     }
 
     static void Start(string exe)
@@ -58,7 +58,7 @@ static class Swapper
         {
             var accounts = store.Accounts();
             if (!accounts.TryGetValue(target, out var next))
-                throw new InvalidOperationException($"аккаунт '{target}' не найден в {store.Root}");
+                throw new InvalidOperationException(Localization.Text(Message.AccountNotFound, target, store.Root));
 
             step = "sync";                                   // сохраняем свежие токены текущего до подмены
             var current = store.SyncActive() ?? "unknown";

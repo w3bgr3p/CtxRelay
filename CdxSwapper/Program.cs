@@ -7,6 +7,7 @@ static class Program
     [STAThread]
     static int Main(string[] args)
     {
+        Localization.Initialize();
         Store store;
         try { store = new Store(); }
         catch (Exception e)

@@ -8,7 +8,7 @@ A Windows tray utility for switching between saved Codex accounts and monitoring
 2. Download `CdxSwapper.exe` from [Releases](https://github.com/w3bgr3p/cdxSwapper/releases/latest).
 3. Run the executable. The application appears in the Windows notification area.
 
-The release is a single executable; no installer is required. The application interface is currently in Russian.
+The release is a single executable; no installer is required. The tray application automatically follows the Windows display language: English, Russian, or Spanish. English is the default and fallback for unsupported languages. Restart CdxSwapper after changing the Windows display language. Dates and times follow your regional settings.
 
 ## Features
 

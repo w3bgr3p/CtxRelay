@@ -34,7 +34,7 @@ static class UsageClient
         var info = new UsageInfo { Name = name, Email = auth.Email, Active = active };
         if (auth.AccessExpired)
         {
-            info.Error = $"step=usage | access_token exp={auth.AccessExp:yyyy-MM-dd HH:mm}Z (истёк, запрос не делаю)";
+            info.Error = "step=usage | " + Localization.Text(Message.TokenExpired, auth.AccessExp);
             return info;
         }
         Exception? last = null;
@@ -69,7 +69,7 @@ static class UsageClient
     static void Parse(UsageInfo info, string body)
     {
         var rl = JsonNode.Parse(body)?["rate_limit"];
-        if (rl == null) { info.Error = $"step=usage_parse | нет rate_limit | server: {Log.Short(body, 300)}"; return; }
+        if (rl == null) { info.Error = $"step=usage_parse | {Localization.Text(Message.MissingRateLimit)} | server: {Log.Short(body, 300)}"; return; }
         info.LimitReached = rl["limit_reached"]?.GetValue<bool>();
         info.Primary = Window(rl["primary_window"]);
         info.Secondary = Window(rl["secondary_window"]);

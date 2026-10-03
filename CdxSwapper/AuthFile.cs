@@ -23,10 +23,10 @@ sealed class AuthFile
         Path = path;
         Raw = File.ReadAllBytes(path);
         var root = JsonNode.Parse(Encoding.UTF8.GetString(Raw).TrimStart('\uFEFF'))
-                   ?? throw new InvalidDataException($"{path}: пустой JSON");
+                   ?? throw new InvalidDataException(Localization.Text(Message.EmptyJson, path));
         var tokens = root["tokens"];
         AccountId = tokens?["account_id"]?.GetValue<string>() ?? "";
-        if (AccountId.Length == 0) throw new InvalidDataException($"{path}: нет tokens.account_id");
+        if (AccountId.Length == 0) throw new InvalidDataException(Localization.Text(Message.MissingAccountId, path));
         AccessToken = tokens?["access_token"]?.GetValue<string>() ?? "";
         LastRefreshRaw = root["last_refresh"]?.GetValue<string>() ?? "";
         LastRefresh = ParseTs(LastRefreshRaw);

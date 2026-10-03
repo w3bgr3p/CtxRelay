@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
+using static CdxSwapper.Localization;
 
 namespace CdxSwapper;
 
@@ -50,7 +51,7 @@ sealed class TrayApp : ApplicationContext
         try
         {
             if (_store.EnsureFileCredentialStore())
-                _tray.ShowBalloonTip(5000, "CdxSwapper", "В config.toml включено хранение авторизации в файле. Перезапустите Codex.", ToolTipIcon.Warning);
+                _tray.ShowBalloonTip(5000, "CdxSwapper", Text(Message.FileAuthEnabled), ToolTipIcon.Warning);
         }
         catch (Exception e) { Log.Write("[warn] " + Log.Error("config", e)); }
     }
@@ -111,7 +112,7 @@ sealed class TrayApp : ApplicationContext
     }
 
     static string Fmt(UsageWindow? w) => w == null ? "-"
-        : $"{w.Left:0}% (сброс {w.ResetAt:dd.MM HH:mm})";
+        : Text(Message.WindowRemaining, w.Left, w.ResetAt?.ToString("g") ?? "–");
 
     UsageInfo? ActiveUsage() => _usage.FirstOrDefault(u => u.Name == _activeName) ?? _usage.FirstOrDefault(u => u.Active);
 
@@ -121,9 +122,9 @@ sealed class TrayApp : ApplicationContext
     {
         var u = ActiveUsage();
         SetIcon(u?.Error == null ? u?.Left : null);
-        var text = u == null ? $"CdxSwapper: {_activeName ?? "нет auth.json"}"
-            : u.Error != null ? $"{u.Name}: ошибка запроса лимитов"
-            : $"{u.Name}\n5h: {Fmt(u.Primary)}\nнеделя: {Fmt(u.Secondary)}";
+        var text = u == null ? $"CdxSwapper: {_activeName ?? Text(Message.NoAuth)}"
+            : u.Error != null ? $"{u.Name}: {Text(Message.UsageError)}"
+            : $"{u.Name}\n{Text(Message.FiveHours)}: {Fmt(u.Primary)}\n{Text(Message.Week)}: {Fmt(u.Secondary)}";
         _tray.Text = text.Length <= 127 ? text : text[..127];
     }
 
@@ -183,42 +184,42 @@ sealed class TrayApp : ApplicationContext
 
         // шапка: активный аккаунт и его остаток
         var au = ActiveUsage();
-        var head = _activeName == null ? "Нет активного auth.json"
-            : au?.Error == null && au?.Left is { } l ? $"{_activeName} · осталось {l:0}%"
+        var head = _activeName == null ? Text(Message.NoActiveAuth)
+            : au?.Error == null && au?.Left is { } l ? Text(Message.Remaining, _activeName, l)
             : $"{_activeName}";
         m.Items.Add(ModernMenu.Caption(m, head, ModernMenu.Dot(m, LeftColor(au?.Error == null ? au?.Left : null))));
-        m.Items.Add(ModernMenu.Caption(m, _refreshing ? "Обновляю лимиты…"
-            : _usageAt == DateTime.MinValue ? "Лимиты ещё не получены" : $"Лимиты на {_usageAt:HH:mm}"));
+        m.Items.Add(ModernMenu.Caption(m, _refreshing ? Text(Message.Refreshing)
+            : _usageAt == DateTime.MinValue ? Text(Message.NotFetched) : Text(Message.UpdatedAt, _usageAt)));
         m.Items.Add(ModernMenu.Separator());
 
         foreach (var (name, auth) in accounts)
         {
             var u = _usage.FirstOrDefault(x => x.Name == name);
             var active = name == _activeName;
-            var right = u == null ? "нет данных"
-                : u.Error != null ? "ошибка"
-                : u.LimitReached == true ? $"лимит до {(u.Primary?.Left == 0 ? u.Primary : u.Secondary)?.ResetAt:HH:mm}"
-                : $"5h {Pct(u.Primary)}  ·  нед {Pct(u.Secondary)}";
+            var right = u == null ? Text(Message.NoData)
+                : u.Error != null ? Text(Message.Error)
+                : u.LimitReached == true ? Text(Message.LimitUntil, (u.Primary?.Left == 0 ? u.Primary : u.Secondary)?.ResetAt)
+                : $"{Text(Message.FiveHours)} {Pct(u.Primary)}  ·  {Text(Message.WeekShort)} {Pct(u.Secondary)}";
             var img = active ? ModernMenu.Glyph(m, ModernMenu.GlyphCheck, ModernMenu.Accent(m))
                 : ModernMenu.Dot(m, LeftColor(u?.Error == null ? u?.Left : null));
             var item = ModernMenu.Item(m, name, right, img);
             item.ToolTipText = u?.Error != null ? $"{auth.Email}\n{u.Error}"
-                : u != null ? $"{auth.Email}\n5h: {Fmt(u.Primary)}\nнеделя: {Fmt(u.Secondary)}" : auth.Email;
+                : u != null ? $"{auth.Email}\n{Text(Message.FiveHours)}: {Fmt(u.Primary)}\n{Text(Message.Week)}: {Fmt(u.Secondary)}" : auth.Email;
             if (active) item.Tag = null;
             else if (_swapping) item.Enabled = false;
             else item.Click += (_, _) => _ = DoSwap(name);
             m.Items.Add(item);
         }
-        if (accounts.Count == 0) m.Items.Add(ModernMenu.Caption(m, "Нет сохранённых аккаунтов"));
+        if (accounts.Count == 0) m.Items.Add(ModernMenu.Caption(m, Text(Message.NoAccounts)));
 
         m.Items.Add(ModernMenu.Separator());
-        m.Items.Add(ModernMenu.Item(m, "Обновить лимиты", null, ModernMenu.Glyph(m, ModernMenu.GlyphRefresh), (_, _) => _ = RefreshUsage()));
-        m.Items.Add(ModernMenu.Item(m, "Открыть папку", null, ModernMenu.Glyph(m, ModernMenu.GlyphFolder),
+        m.Items.Add(ModernMenu.Item(m, Text(Message.RefreshLimits), null, ModernMenu.Glyph(m, ModernMenu.GlyphRefresh), (_, _) => _ = RefreshUsage()));
+        m.Items.Add(ModernMenu.Item(m, Text(Message.OpenFolder), null, ModernMenu.Glyph(m, ModernMenu.GlyphFolder),
             (_, _) => Process.Start(new ProcessStartInfo(_store.Root) { UseShellExecute = true })?.Dispose()));
-        m.Items.Add(ModernMenu.Item(m, "Автозапуск", IsAutostart() ? "вкл" : "выкл", ModernMenu.Glyph(m, ModernMenu.GlyphStartup),
+        m.Items.Add(ModernMenu.Item(m, Text(Message.Autostart), Text(IsAutostart() ? Message.On : Message.Off), ModernMenu.Glyph(m, ModernMenu.GlyphStartup),
             (_, _) => ToggleAutostart()));
         m.Items.Add(ModernMenu.Separator());
-        m.Items.Add(ModernMenu.Item(m, "Выход", null, ModernMenu.Glyph(m, ModernMenu.GlyphPower), (_, _) => ExitThread()));
+        m.Items.Add(ModernMenu.Item(m, Text(Message.Exit), null, ModernMenu.Glyph(m, ModernMenu.GlyphPower), (_, _) => ExitThread()));
         m.ResumeLayout();
     }
 
@@ -245,19 +246,19 @@ sealed class TrayApp : ApplicationContext
     async Task DoSwap(string name)
     {
         var u = _usage.FirstOrDefault(x => x.Name == name);
-        var msg = $"Переключить Codex на «{name}»?\n\nChatGPT будет закрыт и запущен заново." +
-                  (u?.LimitReached == true ? "\n\nВнимание: у этого аккаунта лимит исчерпан." : "");
+        var msg = Text(Message.ConfirmSwap, name) +
+                  (u?.LimitReached == true ? Text(Message.LimitWarning) : "");
         if (MessageBox.Show(msg, "CdxSwapper", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) != DialogResult.OK) return;
         _swapping = true;
         try
         {
             await Task.Run(() => Swapper.Swap(_store, name, _settings.ExePath));
-            _tray.ShowBalloonTip(3000, "CdxSwapper", $"Активен: {name}", ToolTipIcon.Info);
+            _tray.ShowBalloonTip(3000, "CdxSwapper", Text(Message.ActiveAccount, name), ToolTipIcon.Info);
         }
         catch (Exception e)
         {
             Log.Write("[FAIL] " + e.Message);
-            MessageBox.Show(e.Message, "CdxSwapper: свап не выполнен", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(e.Message, Text(Message.SwapFailed), MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
         finally
         {
