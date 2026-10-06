@@ -46,6 +46,12 @@ sealed class SessionApi : IDisposable
             if(action=="delete")
             {
                 if(!doc.RootElement.Bool("confirmed"))throw new ArgumentException("Deletion requires confirmation.");
+                if(item.Provider=="claude" && System.Diagnostics.Process.GetProcessesByName("Claude").Any(p=>
+                    { using(p) return p.MainWindowHandle!=IntPtr.Zero; }))
+                    throw new InvalidOperationException(SessionText.Pick(
+                        "Quit Claude Desktop before deleting this session, then retry. Its in-memory session list cannot be updated by deleting files.",
+                        "Полностью закройте Claude Desktop, затем повторите удаление. Работающий клиент хранит карточку в памяти; удаление файлов не обновляет его список.",
+                        "Cierra Claude Desktop por completo y vuelve a intentar eliminar la sesión. El cliente guarda la lista en memoria."));
                 var backup=await Task.Run(()=>SessionDeletion.Delete(item,dataRoot,catalog.CodexHome));
                 var scan=catalog.Scan();index.Sync(scan.Sessions);
                 return new { ok=true,deleted=true,backup };

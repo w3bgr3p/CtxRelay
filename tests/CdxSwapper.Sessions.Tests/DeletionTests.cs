@@ -38,6 +38,17 @@ static class DeletionTests
             var cli=Path.Combine(root,"claude.jsonl");var card=Path.Combine(root,"local_card.json");File.WriteAllText(cli,"history");File.WriteAllText(card,"card");
             SessionDeletion.Delete(new SessionItem {Provider="claude",Path=cli,DesktopPath=card},Path.Combine(root,"manager"),codex);
             Check(!File.Exists(cli)&&!File.Exists(card),"Claude CLI/Desktop pair not removed");
+            if(System.Diagnostics.Process.GetProcessesByName("Claude").Any(p=>p.MainWindowHandle!=IntPtr.Zero))
+            {
+                var project=Path.Combine(claude,"projects","test");Directory.CreateDirectory(project);
+                var journal=Path.Combine(project,"live.jsonl");File.WriteAllText(journal,"{\"type\":\"user\",\"sessionId\":\"live\",\"message\":{\"content\":\"test\"}}\n");
+                await api.RequestAsync("GET",new Uri("https://local/api/sessions"),"");
+                var liveKey=catalog.Scan().Sessions.Single(s=>s.Provider=="claude").Key;
+                try { await api.RequestAsync("POST",new Uri("https://local/api/action"),SessionJson.Serialize(new { key=liveKey,action="delete",confirmed=true }));throw new Exception("Running Claude deletion reported success"); }
+                catch(InvalidOperationException) { }
+                Check(File.Exists(journal),"Running Claude guard removed history");
+                Console.WriteLine("PASS: running Claude Desktop deletion rejected before changing files.");
+            }
             Console.WriteLine("PASS: deletion requires confirmation, saves backups, removes selected Codex/Claude/Hermes/Antigravity sessions and preserves neighbors.");
         }
         finally { Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();Directory.Delete(root,true); }
