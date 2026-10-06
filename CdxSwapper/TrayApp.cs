@@ -15,6 +15,7 @@ sealed class TrayApp : ApplicationContext
     const string RunName = "CdxSwapper";
 
     readonly Store _store;
+    readonly AuthRefresher _authRefresher;
     readonly Settings _settings;
     readonly NotifyIcon _tray;
     readonly ContextMenuStrip _menu = new();
@@ -26,16 +27,18 @@ sealed class TrayApp : ApplicationContext
     string? _activeName;
     bool _refreshing, _swapping;
     IntPtr _iconHandle;
+    SessionWindow? _window;
 
-    public TrayApp(Store store)
+    public TrayApp(Store store, bool showMainWindow = true)
     {
         _store = store;
+        _authRefresher = new AuthRefresher(store);
         _settings = Settings.Load(store.Root);
         _tray = new NotifyIcon { Visible = true, ContextMenuStrip = _menu, Text = "CdxSwapper" };
         SetIcon(null);
         ModernMenu.Apply(_menu);                    // до BuildMenu: обновляет палитру на Opening
         _menu.Opening += (_, _) => { BuildMenu(); if (DateTime.Now - _usageAt > TimeSpan.FromSeconds(60)) _ = RefreshUsage(); };
-        _tray.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) _ = RefreshUsage(); };
+        _tray.MouseClick += (_, e) => { if (e.Button == MouseButtons.Left) ShowMainWindow(); };
         _syncTimer.Tick += (_, _) => SyncTick();
         _usageTimer.Tick += (_, _) => _ = RefreshUsage();
         _syncTimer.Start();
@@ -43,6 +46,22 @@ sealed class TrayApp : ApplicationContext
         EnsureFileAuth();
         SyncTick();
         _ = RefreshUsage();
+        if (showMainWindow) ShowMainWindow();
+    }
+
+    void ShowMainWindow()
+    {
+        try
+        {
+            if (_window == null || _window.IsDisposed)
+            {
+                var claudeHome = Environment.GetEnvironmentVariable("CLAUDE_CONFIG_DIR");
+                if (string.IsNullOrWhiteSpace(claudeHome)) claudeHome = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".claude");
+                _window = new SessionWindow(_store.CodexHome, claudeHome, Path.Combine(_store.Root, ".sessions"));
+            }
+            _window.ShowMain();
+        }
+        catch (Exception e) { MessageBox.Show(Log.Error("session_window", e), "CdxSwapper", MessageBoxButtons.OK, MessageBoxIcon.Error); }
     }
 
     /// <summary>Разовая проверка при старте: Codex должен хранить авторизацию в файле.</summary>
@@ -84,7 +103,7 @@ sealed class TrayApp : ApplicationContext
         {
             var accounts = _store.Accounts();
             var activeId = _store.Active()?.AccountId;
-            var tasks = accounts.Select(kv => UsageClient.FetchAsync(kv.Key, kv.Value, kv.Value.AccountId == activeId));
+            var tasks = accounts.Select(kv => UsageClient.FetchAsync(kv.Key, kv.Value, kv.Value.AccountId == activeId, _authRefresher));
             _usage = (await Task.WhenAll(tasks)).ToList();
             _usageAt = DateTime.Now;
             foreach (var u in _usage)
@@ -252,6 +271,8 @@ sealed class TrayApp : ApplicationContext
         _swapping = true;
         try
         {
+            if (_store.Accounts().TryGetValue(name, out var auth))
+                await _authRefresher.EnsureAsync(auth);
             await Task.Run(() => Swapper.Swap(_store, name, _settings.ExePath));
             _tray.ShowBalloonTip(3000, "CdxSwapper", Text(Message.ActiveAccount, name), ToolTipIcon.Info);
         }
@@ -287,6 +308,7 @@ sealed class TrayApp : ApplicationContext
 
     protected override void ExitThreadCore()
     {
+        _window?.Shutdown();
         _syncTimer.Stop();
         _usageTimer.Stop();
         _tray.Visible = false;

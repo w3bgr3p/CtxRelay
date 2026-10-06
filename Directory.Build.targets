@@ -1,0 +1,8 @@
+<Project>
+  <!-- WebView2 ships a WPF reference too; this application and its tests only use WinForms. -->
+  <Target Name="RemoveUnusedWebViewWpf" BeforeTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <Reference Remove="@(Reference)" Condition="$([System.String]::Copy('%(Reference.Identity)').EndsWith('Microsoft.Web.WebView2.Wpf.dll'))" />
+    </ItemGroup>
+  </Target>
+</Project>

@@ -8,6 +8,7 @@ namespace CdxSwapper;
 /// </summary>
 sealed class Store
 {
+    static readonly object AuthGate = new();
     public string CodexHome { get; }
     public string Root { get; }
     public string ActivePath => System.IO.Path.Combine(CodexHome, "auth.json");
@@ -61,6 +62,11 @@ sealed class Store
     /// </summary>
     public string? SyncActive()
     {
+        lock (AuthGate) return SyncActiveCore();
+    }
+
+    string? SyncActiveCore()
+    {
         var active = Active();
         if (active == null) return null;
         var accounts = Accounts();
@@ -78,6 +84,36 @@ sealed class Store
     }
 
     public string ConfigPath => System.IO.Path.Combine(CodexHome, "config.toml");
+
+    public AuthFile ReloadForRefresh(AuthFile previous)
+    {
+        lock (AuthGate)
+        {
+            SyncActiveCore();
+            var current = new AuthFile(previous.Path);
+            if (current.AccountId != previous.AccountId)
+                throw new InvalidOperationException(Localization.Text(Message.RefreshAccountChanged));
+            return current;
+        }
+    }
+
+    public AuthFile SaveRefreshed(AuthFile previous, byte[] updated)
+    {
+        lock (AuthGate)
+        {
+            // Codex may have rotated credentials while the HTTP request was in flight.
+            SyncActiveCore();
+            var current = new AuthFile(previous.Path);
+            if (current.AccountId != previous.AccountId)
+                throw new InvalidOperationException(Localization.Text(Message.RefreshAccountChanged));
+            if (!current.Raw.AsSpan().SequenceEqual(previous.Raw)) return current;
+            var active = Active();
+            AtomicWrite(previous.Path, updated);
+            if (active?.AccountId == previous.AccountId && active.Raw.AsSpan().SequenceEqual(previous.Raw))
+                AtomicWrite(ActivePath, updated);
+            return new AuthFile(previous.Path);
+        }
+    }
 
     static readonly Regex KeyLine = new(@"^\s*cli_auth_credentials_store\s*=\s*(.*?)\s*(#.*)?$");
     static readonly Regex TableHeader = new(@"^\s*\[\[?\s*[\w.""'\:\- ]+\s*\]\]?\s*(#.*)?$");
@@ -122,7 +158,7 @@ sealed class Store
     public static void AtomicWrite(string path, byte[] data)
     {
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path)!);
-        var tmp = path + ".cdx_tmp";
+        var tmp = path + "." + Guid.NewGuid().ToString("N") + ".cdx_tmp";
         File.WriteAllBytes(tmp, data);
         File.Move(tmp, path, overwrite: true);
     }

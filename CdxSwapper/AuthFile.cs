@@ -11,6 +11,7 @@ sealed class AuthFile
     public byte[] Raw { get; }
     public string AccountId { get; }
     public string AccessToken { get; }
+    public string RefreshToken { get; }
     public string LastRefreshRaw { get; }
     public DateTime? LastRefresh { get; }
     public string Email { get; }
@@ -28,6 +29,7 @@ sealed class AuthFile
         AccountId = tokens?["account_id"]?.GetValue<string>() ?? "";
         if (AccountId.Length == 0) throw new InvalidDataException(Localization.Text(Message.MissingAccountId, path));
         AccessToken = tokens?["access_token"]?.GetValue<string>() ?? "";
+        RefreshToken = tokens?["refresh_token"]?.GetValue<string>() ?? "";
         LastRefreshRaw = root["last_refresh"]?.GetValue<string>() ?? "";
         LastRefresh = ParseTs(LastRefreshRaw);
 
@@ -37,6 +39,23 @@ sealed class AuthFile
                 ?? at?["https://api.openai.com/profile"]?["email"]?.GetValue<string>() ?? "";
         if (at?["exp"] is JsonValue exp && exp.TryGetValue<long>(out var sec))
             AccessExp = DateTimeOffset.FromUnixTimeSeconds(sec).UtcDateTime;
+    }
+
+    public byte[] WithRefreshedTokens(JsonNode response)
+    {
+        var access = response["access_token"]?.GetValue<string>();
+        if (string.IsNullOrWhiteSpace(access))
+            throw new InvalidDataException(Localization.Text(Message.InvalidRefreshResponse));
+        var account = JwtClaims(access)?["https://api.openai.com/auth"]?["chatgpt_account_id"]?.GetValue<string>();
+        if (!string.IsNullOrEmpty(account) && account != AccountId)
+            throw new InvalidDataException(Localization.Text(Message.RefreshAccountChanged));
+        var root = JsonNode.Parse(Encoding.UTF8.GetString(Raw).TrimStart('\uFEFF'))!;
+        var tokens = root["tokens"]!;
+        tokens["access_token"] = access;
+        foreach (var key in new[] { "refresh_token", "id_token" })
+            if (response[key]?.GetValue<string>() is { Length: > 0 } value) tokens[key] = value;
+        root["last_refresh"] = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
+        return Encoding.UTF8.GetBytes(root.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
     }
 
     public static AuthFile? TryLoad(string path)

@@ -9,7 +9,8 @@ enum Message
     NoAccounts, RefreshLimits, OpenFolder, Autostart, On, Off, Exit, ConfirmSwap,
     LimitWarning, ActiveAccount, SwapFailed, WindowRemaining, TokenExpired,
     MissingRateLimit, KillTimeout, ProcessStillRunning, AccountNotFound,
-    EmptyJson, MissingAccountId
+    EmptyJson, MissingAccountId, RefreshUnavailable, RefreshSignIn,
+    RefreshFailed, InvalidRefreshResponse, RefreshAccountChanged
 }
 
 static class Localization
@@ -65,7 +66,12 @@ static class Localization
         [Message.ProcessStillRunning] = ("{0}.exe still running after 15s: processes={1}", "{0}.exe жив через 15s: процессов={1}", "{0}.exe sigue activo tras 15 s: procesos={1}"),
         [Message.AccountNotFound] = ("Account '{0}' not found in {1}", "аккаунт '{0}' не найден в {1}", "No se encontró la cuenta '{0}' en {1}"),
         [Message.EmptyJson] = ("{0}: empty JSON", "{0}: пустой JSON", "{0}: JSON vacío"),
-        [Message.MissingAccountId] = ("{0}: missing tokens.account_id", "{0}: нет tokens.account_id", "{0}: falta tokens.account_id")
+        [Message.MissingAccountId] = ("{0}: missing tokens.account_id", "{0}: нет tokens.account_id", "{0}: falta tokens.account_id"),
+        [Message.RefreshUnavailable] = ("No refresh token. Sign in to this account in Codex again.", "Нет refresh_token. Войдите в этот аккаунт в Codex заново.", "No hay refresh_token. Vuelve a iniciar sesión con esta cuenta en Codex."),
+        [Message.RefreshSignIn] = ("Refresh token expired, revoked, or already used. Sign in to this account in Codex again.", "Refresh_token истёк, отозван или уже использован. Войдите в этот аккаунт в Codex заново.", "El refresh_token caducó, fue revocado o ya se utilizó. Vuelve a iniciar sesión con esta cuenta en Codex."),
+        [Message.RefreshFailed] = ("Token refresh failed (HTTP {0}).", "Не удалось обновить токен (HTTP {0}).", "No se pudo renovar el token (HTTP {0})."),
+        [Message.InvalidRefreshResponse] = ("Token refresh returned no valid access token.", "Обновление не вернуло корректный access_token.", "La renovación no devolvió un access_token válido."),
+        [Message.RefreshAccountChanged] = ("Account credentials changed during token refresh. Try refreshing limits again.", "Во время обновления токена сменился аккаунт. Обновите лимиты ещё раз.", "La cuenta cambió durante la renovación. Vuelve a actualizar los límites.")
     };
 
     public static string Text(Message message, params object?[] args)

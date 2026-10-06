@@ -30,7 +30,7 @@ static class Program
 
         ApplicationConfiguration.Initialize();
         Log.Write($"[start] store={store.Root} codex_home={store.CodexHome}");
-        var app = new TrayApp(store);
+        var app = new TrayApp(store, !args.Contains("--preview") && !args.Contains("--tray"));
         var pi = Array.IndexOf(args, "--preview");
         if (pi >= 0 && pi + 1 < args.Length)
         {
@@ -51,9 +51,10 @@ static class Program
             lines.Add($"store={store.Root}");
             lines.Add($"active={store.SyncActive() ?? "-"}");
             var activeId = store.Active()?.AccountId;
+            var refresher = new AuthRefresher(store);
             foreach (var (n, a) in store.Accounts())
             {
-                var u = UsageClient.FetchAsync(n, a, a.AccountId == activeId).GetAwaiter().GetResult();
+                var u = UsageClient.FetchAsync(n, a, a.AccountId == activeId, refresher).GetAwaiter().GetResult();
                 lines.Add($"{(u.Active ? "*" : " ")} {n} {a.Email} " + (u.Error ??
                     $"limit={u.LimitReached} 5h_left={u.Primary?.Left} reset={u.Primary?.ResetAt:dd.MM HH:mm} week_left={u.Secondary?.Left} reset={u.Secondary?.ResetAt:dd.MM HH:mm}"));
             }

@@ -29,14 +29,16 @@ static class UsageClient
     static readonly HttpClient Http = new(new HttpClientHandler { AutomaticDecompression = DecompressionMethods.All })
     { Timeout = TimeSpan.FromSeconds(20) };
 
-    public static async Task<UsageInfo> FetchAsync(string name, AuthFile auth, bool active)
+    public static async Task<UsageInfo> FetchAsync(string name, AuthFile auth, bool active, AuthRefresher refresher, HttpClient? client = null)
     {
         var info = new UsageInfo { Name = name, Email = auth.Email, Active = active };
-        if (auth.AccessExpired)
+        try { auth = await refresher.EnsureAsync(auth); }
+        catch (Exception e)
         {
-            info.Error = "step=usage | " + Localization.Text(Message.TokenExpired, auth.AccessExp);
+            info.Error = Log.Error("refresh", e);
             return info;
         }
+        var recovered = false;
         Exception? last = null;
         for (var attempt = 1; attempt <= 3; attempt++)
         {
@@ -47,9 +49,17 @@ static class UsageClient
                 req.Headers.TryAddWithoutValidation("ChatGPT-Account-Id", auth.AccountId);
                 req.Headers.TryAddWithoutValidation("Accept", "application/json");
                 req.Headers.TryAddWithoutValidation("User-Agent", "CdxSwapper/1.0");
-                using var resp = await Http.SendAsync(req);
+                using var resp = await (client ?? Http).SendAsync(req);
                 var body = await resp.Content.ReadAsStringAsync();
                 var code = (int)resp.StatusCode;
+                if (code == 401 && !recovered)
+                {
+                    recovered = true;
+                    try { auth = await refresher.EnsureAsync(auth, force: true); }
+                    catch (Exception e) { info.Error = Log.Error("refresh", e); return info; }
+                    attempt--;
+                    continue;
+                }
                 if (code >= 500 && attempt < 3) { await Task.Delay(2000 * attempt); continue; }
                 if (code != 200) { info.Error = $"step=usage | HTTP {code} | server: {Log.Short(body, 300)}"; return info; }
                 Parse(info, body);

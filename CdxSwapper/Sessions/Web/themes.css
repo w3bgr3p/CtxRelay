@@ -1,0 +1,693 @@
+/* ═══════════════════════════════════════════════════════
+   Шрифт лежал в wwwroot/static/fonts, но @font-face в проекте
+   не было ни одного, а внутреннее имя файла — «JetBrainsMono NF»,
+   не «JetBrains Mono». Поэтому все ссылки на 'JetBrains Mono'
+   молча проваливались в Consolas. Объявляем под тем именем,
+   которым его и зовут в коде.
+   ═══════════════════════════════════════════════════════ */
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('/static/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('/static/fonts/JetBrainsMono-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('/static/fonts/JetBrainsMono-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ═══════════════════════════════════════════════════════
+   themes.css — все темы для всех страниц
+   Применяется через data-theme="dark|light|hyper|graphite" на <html>
+   ═══════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════
+   ШКАЛА — одинакова во всех темах.
+   Собрана по инвентарю фактических значений, а не придумана:
+   каждый шаг здесь реально встречается в коде.
+   Тема может переопределить радиусы; отступы и кегли — общие.
+   ═══════════════════════════════════════════════════════ */
+:root {
+    /* ── Отступы: padding / margin / gap ──
+       Имя = значение. Осознанный выбор: делает замену
+       хардкодов механической и проверяемой попиксельно.
+       Семантический слой (--pad-cell и т.п.) появится позже,
+       когда станут видны роли. */
+    --sp-1:   1px;
+    --sp-2:   2px;
+    --sp-4:   4px;
+    --sp-6:   6px;
+    --sp-8:   8px;
+    --sp-10: 10px;
+    --sp-12: 12px;
+    --sp-14: 14px;
+    --sp-16: 16px;
+    --sp-18: 18px;
+    --sp-20: 20px;
+    --sp-24: 24px;
+    --sp-32: 32px;
+    --sp-48: 48px;
+    --sp-64: 64px;
+    --sp-80: 80px;
+
+    /* ── Кегли ── */
+    --fs-8:   8px;
+    --fs-9:   9px;
+    --fs-10: 10px;
+    --fs-11: 11px;
+    --fs-12: 12px;
+    --fs-13: 13px;
+    --fs-14: 14px;
+    --fs-16: 16px;
+    --fs-18: 18px;
+    --fs-22: 22px;
+    --fs-32: 32px;
+
+    /* ── Начертания ── */
+    --fw-normal: 400;
+    --fw-medium: 500;
+    --fw-semi:   600;
+    --fw-bold:   700;
+
+    /* ── Интерлиньяж ── */
+    --lh-tight:  1;
+    --lh-normal: 1.35;
+    --lh-loose:  1.5;
+
+    /* Моноширинный стек. */
+    /* Замерено по ширине глифа: JetBrains Mono в системе нет (0.449 —
+       это дефолтный пропорциональный), ui-monospace Chrome не знает.
+       Приложение всегда рисовало Consolas (0.550). Cascadia (0.586)
+       в стеке впереди Consolas делала строку на 6.5% шире. */
+    --mono: 'JetBrains Mono', Consolas, monospace;
+}
+
+/* ── DARK (default) ── */
+:root,
+[data-theme="dark"] {
+    /* zp7 variables */
+    --bg:          #0d1117;
+    --bg1:         #161b22;
+    --bg2:         #21262d;
+    --bg3:         #1f2937;
+    --border:      #30363d;
+    --muted:       #484f58;
+    --muted2:      #6e7681;
+    --text3:       #7d8590;
+    --text2:       #8b949e;
+    --text:        #c9d1d9;
+    --text-hi:     #e6edf3;
+
+    --accent:      #58a6ff;
+    --accent-lo:   #79c0ff;
+    --blue-border: #1f6feb;
+    --blue-tint:   #0d2137;
+
+    --green:       #3fb950;
+    --green-lo:    #56d364;
+    --green-hi:    #7ee787;
+    --green-bg:    #238636;
+    --green-bg2:   #2ea043;
+    --green-tint: #0e2f12;
+
+    --red:         #f85149;
+    --red-lo:      #ff7b72;
+    --red-bg:      #da3633;
+    --red-bg2:     #b91c1c;
+    --red-tint:    #2a0d0d;
+    --red-tint2:   #1c1214;
+
+    --yellow:      #d29922;
+    --yellow-lo:   #f0883e;
+    --yellow-tint: #2a1d0d;
+
+    --purple:      #a371f7;
+    --purple-tint: #1a0e2f;
+
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-size: 12px;
+    --radius: 6px;
+    --radius-sm:   3px;
+
+    /* Псевдонимы ролей */
+    --surface:    var(--bg1);
+    --surface2:   var(--bg2);
+    --surface3:   var(--bg3);
+    --border2:    #3a424e;
+    --text-dim:   var(--text2);
+    --text-muted: var(--muted);
+    --accent-dim: var(--blue-tint);
+    --green-dim:  var(--green-tint);
+    --yellow-dim: var(--yellow-tint);
+    --red-dim:    var(--red-tint);
+    --purple-dim: var(--purple-tint);
+
+    /* json syntax */
+    --key-color:    #58a6ff;
+    --string-color: #3fb950;
+    --number-color: #d29922;
+    --bool-color:   #ff6b9d;
+    --null-color:   #a371f7;
+
+    --radius-lg: 10px;
+    --row-h: 19px;
+
+    /* Текст на залитой подложке */
+    /* Матовый синий (тон BMW, H=208), пришёл на смену фиолетовому */
+    /* Бирюза: статус Schedule. Разведена с --steel по тону (177 против 208). */
+    /* Золото: денежные суммы в treasury. */
+    /* Индиго и розовый: категории бейджей безопасности в json. */
+    --indigo:             #8f8fff;
+    --indigo-tint:        #0e0e2f;
+    --indigo-tint-border: #16164b;
+    --pink:             #ff8fce;
+    --pink-tint:        #2f0e21;
+    --pink-tint-border: #4b1634;
+
+    --gold:              #ffd700;
+    --gold-tint:         #2f2a0e;
+    --gold-tint-border:  #4b4316;
+
+    --cyan:             #66d6d1;
+    --cyan-tint:        #0e3432;
+    --cyan-tint-border: #15514e;
+
+    --steel:             #79a6cd;
+    --steel-tint:        #0e202f;
+    --steel-tint-border: #16324b;
+
+    --on-accent:   #0d1117;
+    --on-solid:    #ffffff;
+
+    /* Рамка к --*-tint. Тинт + ~7% светлоты, тот же тон. */
+    --blue-tint-border: #143254;
+    --red-tint-border: #451515;
+    --yellow-tint-border: #453015;
+    --green-tint-border: #164b1d;
+    --purple-tint-border: #29164b;
+}
+
+/* ── LIGHT ── */
+[data-theme="light"] {
+    --bg:          #ffffff;
+    --bg1:         #f6f8fa;
+    --bg2:         #eaeef2;
+    --bg3:         #dde1e6;
+    --border:      #d0d7de;
+    --muted:       #9ea8b3;
+    --muted2:      #b1bac4;
+    --text3:       #8c959f;
+    --text2:       #656d76;
+    --text:        #1f2328;
+    --text-hi:     #0d1117;
+
+    --accent:      #0969da;
+    --accent-lo:   #0550ae;
+    --blue-border: #54aeff;
+    --blue-tint:   #ddf4ff;
+
+    --green:       #1a7f37;
+    --green-lo:    #116329;
+    --green-hi:    #1a7f37;
+    --green-bg:    #dafbe1;
+    --green-bg2:   #aceebb;
+    --green-tint:  #dafbe1;
+
+    --red:         #cf222e;
+    --red-lo:      #a40e26;
+    --red-bg:      #ffebe9;
+    --red-bg2:     #ffc1ba;
+    --red-tint:    #ffebe9;
+    --red-tint2:   #fff0ee;
+
+    --yellow:      #9a6700;
+    --yellow-lo:   #7d4e00;
+    --yellow-tint: #fff8c5;
+
+    --purple:      #8250df;
+    --purple-tint: #fbefff;
+
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-size: 12px;
+    --radius: 6px;
+    --radius-sm:   3px;
+
+    --surface:    var(--bg1);
+    --surface2:   var(--bg2);
+    --surface3:   var(--bg3);
+    --border2:    #b6bec8;
+    --text-dim:   var(--text2);
+    --text-muted: var(--muted);
+    --accent-dim: var(--blue-tint);
+    --green-dim:  var(--green-tint);
+    --yellow-dim: var(--yellow-tint);
+    --red-dim:    var(--red-tint);
+    --purple-dim: var(--purple-tint);
+
+    --key-color:    #0969da;
+    --string-color: #1a7f37;
+    --number-color: #9a6700;
+    --bool-color:   #cf222e;
+    --null-color:   #8250df;
+
+    --radius-lg: 10px;
+    --row-h: 19px;
+
+    /* Текст на залитой подложке */
+    /* Матовый синий (тон BMW, H=208), пришёл на смену фиолетовому */
+    /* Бирюза: статус Schedule. Разведена с --steel по тону (177 против 208). */
+    /* Золото: денежные суммы в treasury. */
+    /* Индиго и розовый: категории бейджей безопасности в json. */
+    --indigo:             #3030a6;
+    --indigo-tint:        #dedef7;
+    --indigo-tint-border: #a5a5e9;
+    --pink:             #a63073;
+    --pink-tint:        #f7deec;
+    --pink-tint-border: #e9a5cb;
+
+    --gold:              #8a6a00;
+    --gold-tint:         #f7f3de;
+    --gold-tint-border:  #e9dea5;
+
+    --cyan:             #197671;
+    --cyan-tint:        #daf6f4;
+    --cyan-tint-border: #95e4e1;
+
+    --steel:             #2f6493;
+    --steel-tint:        #deebf7;
+    --steel-tint-border: #a5c9e9;
+
+    --on-accent:   #ffffff;
+    --on-solid:    #1f2328;
+
+    /* Рамка к --*-tint. Тинт + ~7% светлоты, тот же тон. */
+    --blue-tint-border: #96ddff;
+    --red-tint-border: #ffaaa2;
+    --yellow-tint-border: #ffef7e;
+    --green-tint-border: #9af4ad;
+    --purple-tint-border: #e9a8ff;
+}
+
+/* ── HYPER ── */
+[data-theme="hyper"] {
+    --bg:          #000000;
+    --bg1:         #0a0a0a;
+    --bg2:         #111111;
+    --bg3:         #1a1a1a;
+    --border:      #2a2a2a;
+    --muted:       #333333;
+    --muted2:      #444444;
+    --text3:       #555555;
+    --text2:       #888888;
+    --text:        #cccccc;
+    --text-hi:     #eeeeee;
+
+    --accent:      #00ff41;
+    --accent-lo:   #00cc33;
+    --blue-border: #0affef;
+    --blue-tint:   #001a1a;
+
+    --green:       #00ff41;
+    --green-lo:    #00cc33;
+    --green-hi:    #39ff14;
+    --green-bg:    #003300;
+    --green-bg2:   #004400;
+    --green-tint:  #001100;
+
+    --red:         #ff3333;
+    --red-lo:      #ff6666;
+    --red-bg:      #550000;
+    --red-bg2:     #440000;
+    --red-tint:    #1a0000;
+    --red-tint2:   #110000;
+
+    --yellow:      #f5d800;
+    --yellow-lo:   #ff9900;
+    --yellow-tint: #1a1400;
+
+    --purple:      #bd93f9;
+    --purple-tint: #0f0a1a;
+
+    --font: 'JetBrains Mono', monospace;
+    --font-size: 11px;
+    --radius: 0px;
+    --radius-sm:   0px;
+
+    --surface:    var(--bg1);
+    --surface2:   var(--bg2);
+    --surface3:   var(--bg3);
+    --border2:    #3a3a3a;
+    --text-dim:   var(--text2);
+    --text-muted: var(--muted);
+    --accent-dim: var(--blue-tint);
+    --green-dim:  var(--green-tint);
+    --yellow-dim: var(--yellow-tint);
+    --red-dim:    var(--red-tint);
+    --purple-dim: var(--purple-tint);
+
+    --key-color:    #00ff41;
+    --string-color: #00cc33;
+    --number-color: #f5d800;
+    --bool-color:   #ff6b9d;
+    --null-color:   #bd93f9;
+
+    --radius-lg: 0px;
+    --row-h: 19px;
+
+    /* Текст на залитой подложке */
+    /* Матовый синий (тон BMW, H=208), пришёл на смену фиолетовому */
+    /* Бирюза: статус Schedule. Разведена с --steel по тону (177 против 208). */
+    /* Золото: денежные суммы в treasury. */
+    /* Индиго и розовый: категории бейджей безопасности в json. */
+    --indigo:             #7070ff;
+    --indigo-tint:        #08082b;
+    --indigo-tint-border: #0d0d4a;
+    --pink:             #ff70c1;
+    --pink-tint:        #2b081c;
+    --pink-tint-border: #4a0d2f;
+
+    --gold:              #ffd700;
+    --gold-tint:         #2b2608;
+    --gold-tint-border:  #4a410d;
+
+    --cyan:             #0affef;
+    --cyan-tint:        #082b2a;
+    --cyan-tint-border: #0d4a47;
+
+    --steel:             #5aa3e2;
+    --steel-tint:        #081b2b;
+    --steel-tint-border: #0d2d4a;
+
+    --on-accent:   #000000;
+    --on-solid:    #ffffff;
+
+    /* Рамка к --*-tint. Тинт + ~7% светлоты, тот же тон. */
+    --blue-tint-border: #003e3e;
+    --red-tint-border: #3e0000;
+    --yellow-tint-border: #3e2f00;
+    --green-tint-border: #003500;
+    --purple-tint-border: #1e1434;
+}
+
+/* ── Hyper: page-specific extras (scanlines, glows) ── */
+/* ═══════════════════════════════════════════════════════
+   GRAPHITE — графитовые поверхности, монохромная хрома.
+   Цвет оставлен только там, где он кодирует состояние:
+   статусы, уровни логов, подсветка синтаксиса, категории.
+   Проверено на zp7: серые плашки статусов в семнадцати
+   строках подряд сливаются в один столбец и не читаются.
+   ═══════════════════════════════════════════════════════ */
+[data-theme="graphite"] {
+    /* ── Поверхности и текст: монохром ── */
+    --bg:           #020303;
+    --bg1:          #0c0d0e;
+    --bg2:          #101214;
+    --bg3:          #171b1e;
+    --border:       #333637;
+    --muted:        #6c7275;
+    --muted2:       #8a9093;
+    --text3:        #82898c;
+    --text2:        #a5a9ac;
+    /* Спецификация graphite даёт #f3f5f6, но там это 14px на просторных
+       панелях. На плотной строке такой светлый текст расплывается и
+       читается жирным: замерено 234 против 204 у hyper при том же шрифте
+       и том же весе. Приведено к уровню остальных тем. */
+    --text:         #c9cccd;
+    --text-hi:     #f7fbff;
+
+    /* ── Акцент: тоже монохром. Это хрома, не состояние. ── */
+    --accent:      #dfe1e2;
+    --accent-lo:   #f7fbff;
+    --blue-border: #45484a;
+    --blue-tint:   #181a1b;
+
+    /* ── Состояния: цвет сохранён ── */
+    --green:       #74be7e;
+    --green-lo:    #93cc9b;
+    --green-hi:    #97ce9e;
+    --green-bg:    #326739;
+    --green-bg2:   #408249;
+    --green-tint:  #172719;
+
+    --red:         #d87d79;
+    --red-lo:      #e2a09c;
+    --red-bg:      #8c3b36;
+    --red-bg2:     #6e2e2b;
+    --red-tint:    #271717;
+    --red-tint2:   #1d1211;
+
+    --yellow:      #c6a96c;
+    --yellow-lo:   #d3bd8d;
+    --yellow-tint: #272217;
+
+    --purple:      #89a5bd;
+    --purple-tint: #171f27;
+
+    --font: var(--mono);
+    --font-size: 12px;
+    --radius:      10px;
+    --radius-sm:   6px;
+    --radius-lg:   14px;
+
+    --surface:    var(--bg1);
+    --surface2:   var(--bg2);
+    --surface3:   var(--bg3);
+    --border2:    #414648;
+    --text-dim:   var(--text2);
+    --text-muted: var(--muted);
+    --accent-dim: var(--blue-tint);
+    --green-dim:  var(--green-tint);
+    --yellow-dim: var(--yellow-tint);
+    --red-dim:    var(--red-tint);
+    --purple-dim: var(--purple-tint);
+
+    /* Подсветка синтаксиса кодирует вид значения — цвет остаётся. */
+    --key-color:    #89a5bd;
+    --string-color: #74be7e;
+    --number-color: #c6a96c;
+    --bool-color:   #d095b6;
+    --null-color:   #9595d0;
+    /* ── Плотность graphite: просторнее общей шкалы примерно в 1.4 раза.
+       Переобъявляются только изменяемые ступени — остальные берутся из :root.
+       Проверено: другие темы это не задевает. ── */
+    --sp-2:   3px;
+    --sp-4:   6px;
+    --sp-6:   8px;
+    --sp-8:  11px;
+    --sp-10: 14px;
+    --sp-12: 16px;
+    --sp-14: 19px;
+    --sp-16: 22px;
+    --sp-18: 24px;
+    --sp-20: 28px;
+    --sp-24: 32px;
+
+
+    --lh-normal: 1.45;
+    --lh-loose:  1.6;
+
+    --row-h: 24px;
+
+    --steel:         #89a5bd;
+    --steel-tint:    #171f27;
+    --steel-tint-border: #27343f;
+    --cyan:          #7ab8b5;
+    --cyan-tint:     #172726;
+    --cyan-tint-border: #273f3e;
+    --gold:          #c7bb75;
+    --gold-tint:     #272417;
+    --gold-tint-border: #3f3c27;
+    --indigo:        #9595d0;
+    --indigo-tint:   #171727;
+    --indigo-tint-border: #27273f;
+    --pink:          #d095b6;
+    --pink-tint:     #271720;
+    --pink-tint-border: #3f2735;
+
+    --on-accent:   #020303;
+    --on-solid:    #f7fbff;
+
+    --blue-tint-border:   #2c2f30;
+    --red-tint-border:    #3f2827;
+    --yellow-tint-border: #3f3727;
+    --green-tint-border:  #273f2a;
+    --purple-tint-border: #27343f;
+}
+
+/* ═══════════════════════════════════════════════════════
+   GRAPHITE — материалы.
+   Токенами не выражаются: это градиенты и тени, а не значения.
+   Размеры теней уменьшены против оригинала graphite — там они
+   рассчитаны на панели дашборда, а здесь строка высотой 24px.
+   ═══════════════════════════════════════════════════════ */
+[data-theme="graphite"] {
+    --gr-highlight:  rgba(236, 243, 247, 0.065);
+    --gr-highlight2: rgba(236, 243, 247, 0.12);
+    --gr-edge:       rgba(255, 255, 255, 0.085);
+    --gr-shade:      rgba(0, 0, 0, 0.26);
+    --gr-drop:       rgba(0, 0, 0, 0.38);
+    --gr-halo:       rgba(225, 239, 248, 0.07);
+    --gr-ctl-top:    #2c3236;
+    --gr-ctl-bottom: #171c1f;
+    --gr-ctl-hi-top: #353d42;
+    --gr-ctl-hi-bot: #20272b;
+}
+
+/* ── Панель: свет сверху-слева, притенение снизу, тень наружу ── */
+[data-theme="graphite"] .card,
+[data-theme="graphite"] .panel,
+[data-theme="graphite"] .detail-panel,
+[data-theme="graphite"] .log-panel,
+[data-theme="graphite"] .detail-section,
+[data-theme="graphite"] .stat-card,
+[data-theme="graphite"] .ov-stat,
+[data-theme="graphite"] .ov-table,
+[data-theme="graphite"] .tasks-panel {
+    background: linear-gradient(155deg, var(--gr-highlight), transparent 52%), var(--bg1);
+    box-shadow: inset 0 1px var(--gr-edge), inset 0 -24px 40px var(--gr-shade), 0 10px 24px var(--gr-drop);
+}
+
+/* ── Оверлеи лежат выше: подсветка сильнее, тень глубже ── */
+[data-theme="graphite"] .modal,
+[data-theme="graphite"] .pm-modal,
+[data-theme="graphite"] .cm-modal,
+[data-theme="graphite"] #dialogBox {
+    background: linear-gradient(145deg, var(--gr-highlight2), transparent 85%), var(--bg3);
+    box-shadow: inset 0 1px var(--gr-highlight2), 0 16px 44px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Шапки: тонкая световая кромка сверху ── */
+[data-theme="graphite"] .main-header,
+[data-theme="graphite"] .header,
+[data-theme="graphite"] .panel-header,
+[data-theme="graphite"] .detail-header,
+[data-theme="graphite"] .log-panel-header,
+[data-theme="graphite"] .card-hdr,
+[data-theme="graphite"] .ov-head,
+[data-theme="graphite"] .pm-header,
+[data-theme="graphite"] .cm-modal-header {
+    background: linear-gradient(115deg, #191b1c, #0d0e0f 62%, #080909);
+    box-shadow: inset 0 1px var(--gr-edge);
+}
+
+/* ── Кнопки: выпуклые ── */
+[data-theme="graphite"] .btn,
+[data-theme="graphite"] .act-btn,
+[data-theme="graphite"] .dialog-btn,
+[data-theme="graphite"] .mini-btn,
+[data-theme="graphite"] .panel-refresh,
+[data-theme="graphite"] .copy-btn {
+    background: linear-gradient(145deg, var(--gr-ctl-top), var(--gr-ctl-bottom));
+    box-shadow: inset 0 1px var(--gr-edge), 0 3px 8px var(--gr-shade);
+}
+[data-theme="graphite"] .btn:hover,
+[data-theme="graphite"] .act-btn:hover,
+[data-theme="graphite"] .dialog-btn:hover,
+[data-theme="graphite"] .mini-btn:hover,
+[data-theme="graphite"] .panel-refresh:hover,
+[data-theme="graphite"] .copy-btn:hover {
+    background: linear-gradient(145deg, var(--gr-ctl-hi-top), var(--gr-ctl-hi-bot));
+}
+
+/* ── Поля ввода: утопленные ── */
+[data-theme="graphite"] input:not([type=checkbox]):not([type=radio]):not([type=file]),
+[data-theme="graphite"] select,
+[data-theme="graphite"] textarea {
+    background: var(--bg);
+    box-shadow: inset 0 2px 5px var(--gr-shade), inset 0 1px rgba(231, 239, 244, 0.09);
+}
+
+/* ── Выделенное: светлая обводка и тихое свечение ── */
+[data-theme="graphite"] .schedule-row.active,
+[data-theme="graphite"] .tree-row.selected,
+[data-theme="graphite"] .cfg-rail-item.active,
+[data-theme="graphite"] .table-item.active,
+[data-theme="graphite"] .request-item.selected {
+    box-shadow: inset 0 0 0 1px var(--gr-halo), 0 0 16px var(--gr-halo);
+}
+
+[data-theme="hyper"] body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+            0deg,
+            transparent,
+            transparent 2px,
+            rgba(0,0,0,0.04) 2px,
+            rgba(0,0,0,0.04) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
+[data-theme="hyper"] .main-header  { box-shadow: 0 0 20px rgba(0,255,65,0.06); }
+[data-theme="hyper"] .main-header h1,
+[data-theme="hyper"] .panel-title,
+[data-theme="hyper"] .lp-title     { text-shadow: 0 0 8px rgba(0,255,65,0.4); letter-spacing: 0.15em; text-transform: uppercase; }
+
+[data-theme="hyper"] .btn          { background: transparent !important; border-radius: 0 !important; letter-spacing: 0.1em; text-transform: uppercase; }
+[data-theme="hyper"] .btn.primary  { border-color: var(--accent) !important; color: var(--accent) !important; }
+[data-theme="hyper"] .btn-start    { border-color: var(--green) !important; color: var(--green) !important; }
+[data-theme="hyper"] .btn-stop     { border-color: var(--red)   !important; color: var(--red)   !important; }
+[data-theme="hyper"] .btn-update   { border-color: var(--border) !important; color: var(--text2) !important; }
+[data-theme="hyper"] .btn:hover    { box-shadow: 0 0 10px currentColor; filter: brightness(1.2); }
+
+[data-theme="hyper"] .task-work-dot.working { animation: blink 1s steps(1) infinite !important; box-shadow: 0 0 6px var(--green); }
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+[data-theme="hyper"] .task-row.selected { background: rgba(0,255,65,0.04) !important; border-left-color: var(--green) !important; }
+[data-theme="hyper"] .auto-badge.on     { border-color: var(--green) !important; color: var(--green) !important; box-shadow: 0 0 8px rgba(0,255,65,0.1); }
+
+[data-theme="hyper"] .modal,
+[data-theme="hyper"] #dialogBox        { border-color: var(--green) !important; box-shadow: 0 0 40px rgba(0,255,65,0.1); border-radius: 0 !important; }
+[data-theme="hyper"] .modal-header h3,
+[data-theme="hyper"] #dialogTitle      { color: var(--green) !important; text-transform: uppercase; letter-spacing: 0.15em; }
+
+[data-theme="hyper"] .dialog-btn               { background: transparent !important; border-radius: 0 !important; text-transform: uppercase; }
+[data-theme="hyper"] .dialog-btn.primary        { border-color: var(--green) !important; color: var(--green) !important; }
+[data-theme="hyper"] .dialog-btn.primary:hover  { background: rgba(0,255,65,0.06) !important; }
+[data-theme="hyper"] .dialog-btn.danger         { border-color: var(--red) !important; color: var(--red) !important; }
+
+[data-theme="hyper"] .section-divider     { border-left-color: var(--green) !important; }
+[data-theme="hyper"] .detail-section      { border-left: 2px solid var(--green) !important; }
+[data-theme="hyper"] .detail-section h4   { text-shadow: 0 0 6px rgba(0,255,65,0.3); }
+
+[data-theme="hyper"] .st-Stop     { background: transparent !important; border: 1px solid var(--border) !important; color: var(--text3) !important; }
+[data-theme="hyper"] .st-Schedule { background: transparent !important; border: 1px solid var(--cyan) !important; color: var(--cyan) !important; box-shadow: 0 0 6px rgba(10,255,239,0.15); }
+[data-theme="hyper"] .st-Perform  { background: transparent !important; border: 1px solid var(--green) !important; color: var(--green) !important; box-shadow: 0 0 6px rgba(0,255,65,0.2); }
+[data-theme="hyper"] .st-Complete { background: transparent !important; border: 1px solid var(--steel) !important; color: var(--steel) !important; }
+[data-theme="hyper"] .st-Fail     { background: transparent !important; border: 1px solid var(--red) !important; color: var(--red) !important; }
+[data-theme="hyper"] .st-Newbie   { background: transparent !important; border: 1px solid var(--yellow) !important; color: var(--yellow) !important; }
+
+[data-theme="hyper"] .tl-lvl.ERROR   { background: transparent !important; border: 1px solid var(--red);    color: var(--red); }
+[data-theme="hyper"] .tl-lvl.WARNING { background: transparent !important; border: 1px solid var(--yellow); color: var(--yellow); }
+[data-theme="hyper"] .tl-lvl.INFO    { background: transparent !important; border: 1px solid #0affef;       color: #0affef; }
+[data-theme="hyper"] .tl-lvl.DEBUG   { background: transparent !important; border: 1px solid var(--border); color: var(--text3); }
+
+[data-theme="hyper"] .th-method.GET    { background: transparent !important; border: 1px solid #0affef;       color: #0affef; }
+[data-theme="hyper"] .th-method.POST   { background: transparent !important; border: 1px solid var(--green);  color: var(--green); }
+[data-theme="hyper"] .th-method.PUT    { background: transparent !important; border: 1px solid var(--yellow); color: var(--yellow); }
+[data-theme="hyper"] .th-method.DELETE { background: transparent !important; border: 1px solid var(--red);    color: var(--red); }
+[data-theme="hyper"] .th-status.s2xx   { background: transparent !important; border: 1px solid var(--green);  color: var(--green); }
+[data-theme="hyper"] .th-status.s3xx   { background: transparent !important; border: 1px solid #0affef;       color: #0affef; }
+[data-theme="hyper"] .th-status.s4xx   { background: transparent !important; border: 1px solid var(--yellow); color: var(--yellow); }
+[data-theme="hyper"] .th-status.s5xx   { background: transparent !important; border: 1px solid var(--red);    color: var(--red); }
+
+[data-theme="hyper"] .resizer:hover,
+[data-theme="hyper"] .logs-resizer:hover { background: var(--green) !important; box-shadow: 0 0 6px rgba(0,255,65,0.3); }
+[data-theme="hyper"] .modal-tab.active   { color: var(--green) !important; }
+
+/* ══════════════════════════════════════════════════════════════
+   EXTENDED THEMES
+   ══════════════════════════════════════════════════════════════ */

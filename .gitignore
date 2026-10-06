@@ -17,3 +17,5 @@ settings.json
 check.txt
 *.log
 .backup/
+*.refresh.lock
+*.cdx_tmp
