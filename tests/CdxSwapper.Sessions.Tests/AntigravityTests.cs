@@ -76,6 +76,25 @@ static class AntigravityTests
             var match=search.Search("Native Gemini entry 0").Matches[native.Key];
             Check(catalog.Match(native.Key,match.Hits[0].Offset)?.Text.Contains("entry 0")==true,"Search hit opens native step");
             var converter=new SessionConverter(codex,claude,Path.Combine(root,"conversions"));
+            var historyPath=Path.Combine(root,"historical.db");
+            var historyId=Guid.NewGuid().ToString();
+            const string historical="exec {\"input\":\"$destination = Join-Path $root 'app.exe'\"}";
+            using(var writer=new AntigravityWriter(historyPath,historyId,new SessionItem { Provider="codex",Cwd=root }))
+                writer.Write(new("assistant","Before\n\n[Historical tool call / result] "+historical+"\n\nAfter",""));
+            using(var historyDb=HermesStore.Open(historyPath))
+            using(var historyCmd=historyDb.CreateCommand())
+            {
+                historyCmd.CommandText="SELECT step_type,step_payload FROM steps ORDER BY idx";
+                using var reader=historyCmd.ExecuteReader();var prose=new List<string>();string result="";
+                while(reader.Read())
+                {
+                    var bytes=(byte[])reader[1];var type=reader.GetInt32(0);
+                    if(type==15)prose.Add(AntigravityProto.Text(AntigravityProto.Blob(bytes,20),8));
+                    if(type==38)result=AntigravityProto.Text(AntigravityProto.Blob(bytes,47),3);
+                }
+                Check(prose.Where(p=>p.Length>0).SequenceEqual(new[] { "Before","After" }),"Historical tool blocks removed from Markdown prose");
+                Check(result==historical,"Historical PowerShell arguments preserved verbatim in native tool result");
+            }
             var original=File.ReadAllBytes(source.Path);
             var converted=converter.Convert(source,"codex");
             Check(converted.Messages==6,"Antigravity tool calls and orphan results converted as complete pairs");

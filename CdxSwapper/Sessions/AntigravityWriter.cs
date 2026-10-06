@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Data.Sqlite;
 
 namespace CdxSwapper.Sessions;
@@ -41,6 +42,24 @@ sealed class AntigravityWriter : IDisposable
     }
     public void Write(SessionMessage message)
     {
+        if(message.Role is "user" or "assistant" && message.Text.Contains("[Historical tool call / result]",StringComparison.Ordinal))
+        {
+            int position=0;
+            foreach(Match block in Regex.Matches(message.Text,@"(?m)^\[Historical tool call / result\][^\r\n]*(?:\r?\n(?!\s*\r?$)[^\r\n]+)*"))
+            {
+                var prose=message.Text[position..block.Index].Trim();
+                if(prose.Length>0)Write(message with { Text=prose });
+                var record=block.Value["[Historical tool call / result]".Length..].Trim();
+                var id=Guid.NewGuid().ToString("N");
+                Write(new("tool",record,message.Timestamp,ToolName:"historical_context",CallId:id,
+                    ToolArguments:JsonSerializer.Serialize(new { record })));
+                Write(new("tool",record,message.Timestamp,CallId:id));
+                position=block.Index+block.Length;
+            }
+            var remainder=message.Text[position..].Trim();
+            // An inline marker is ordinary prose; avoid recursively parsing it.
+            if(position>0) { if(remainder.Length>0)Write(message with { Text=remainder });return; }
+        }
         if(message.Role=="user") Add(14,19,Bytes(3,Text(1,message.Text)));
         else if(message.Role=="assistant") Add(15,20,Join(Text(1,message.Text),Text(8,message.Text)));
         else if(message.Role=="tool")

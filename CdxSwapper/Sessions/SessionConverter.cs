@@ -25,7 +25,7 @@ sealed class SessionConverter(string codexHome, string claudeHome, string dataRo
     {
         var stamp = SessionSource.Stamp(item);
         var targetHome = target switch { "codex" => codexHome, "claude" => claudeHome, "antigravity" => Path.Combine(AntigravityStore.DefaultRoot,"antigravity-ide"), "antigravity-app" => Path.Combine(AntigravityStore.DefaultRoot,"antigravity"), _ => hermesHome ?? HermesStore.DefaultHome };
-        var version = target is "antigravity" or "antigravity-app" ? "v5-antigravity-completed-steps" : target == "hermes" ? "v5-hermes-tool-display" : target == "claude" ? "v6-claude-native-tools" : "v7-codex-visible-tools";
+        var version = target is "antigravity" or "antigravity-app" ? "v6-antigravity-historical-tools" : target == "hermes" ? "v5-hermes-tool-display" : target == "claude" ? "v6-claude-native-tools" : "v7-codex-visible-tools";
         var identity = $"{version}:{item.Path}:{item.Id}:{stamp}:{target}:{Path.GetFullPath(targetHome)}";
         var fingerprint = System.Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity))).ToLowerInvariant();
         var folder = Path.Combine(dataRoot, fingerprint); var manifest = Path.Combine(folder, "conversion.json");
