@@ -43,6 +43,13 @@ sealed class SessionApi : IDisposable
             if (body.Length is 0 or > 4096) throw new ArgumentException("Invalid request size.");
             using var doc = JsonDocument.Parse(body);
             var item = catalog.Get(doc.RootElement.Str("key")); var action = doc.RootElement.Str("action");
+            if(action=="delete")
+            {
+                if(!doc.RootElement.Bool("confirmed"))throw new ArgumentException("Deletion requires confirmation.");
+                var backup=await Task.Run(()=>SessionDeletion.Delete(item,dataRoot,catalog.CodexHome));
+                var scan=catalog.Scan();index.Sync(scan.Sessions);
+                return new { ok=true,deleted=true,backup };
+            }
             if (action is "continue-codex" or "continue-claude" or "continue-hermes" or "continue-antigravity" or "continue-antigravity-ide")
             {
                 var target = action switch { "continue-antigravity"=>"antigravity-app", "continue-antigravity-ide"=>"antigravity",_=>action[9..] };

@@ -162,7 +162,15 @@ static class UiSmoke
             await document.fonts.ready;
             check(document.fonts.check('12px "JetBrains Mono"'),'embedded font');
             check((await api('/api/session?key='+s.key)).bytesRead>0,'page contract');
-            $('#search').value='';await searchContent();$('#providers [data-provider="hermes"]').click();await selectSession(h.key);
+            $('#search').value='';await searchContent();await selectSession(s.key);
+            check($('#detail [data-action="delete"]')!==null,'delete action visible');
+            const originalConfirm=window.confirm;let asked=false;
+            window.confirm=()=>{asked=true;return false;};$('#detail [data-action="delete"]').click();
+            check(asked&&sessions.some(x=>x.key===s.key),'cancel leaves session intact');
+            window.confirm=()=>true;$('#detail [data-action="delete"]').click();
+            for(let i=0;i<100&&sessions.some(x=>x.key===s.key);i++)await new Promise(r=>setTimeout(r,50));
+            window.confirm=originalConfirm;check(!sessions.some(x=>x.key===s.key),'confirmed deletion updates list');
+            $('#providers [data-provider="hermes"]').click();await selectSession(h.key);
             window.smokeResult='PASS: real WebView2 four-client list, both Antigravity sources/filter/search/actions, Hermes paging/search, localized heading, token/key checks, old search hit, escaping, themes, font, native clipboard.';
           }catch(error){window.smokeResult='FAIL: '+error.message;}
         })();

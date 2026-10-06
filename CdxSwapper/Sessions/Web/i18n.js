@@ -2,6 +2,9 @@
 const language = ['en','ru','es'].includes(document.documentElement.lang) ? document.documentElement.lang : 'en';
 const locale = document.documentElement.dataset.locale || language;
 const strings = {
+  deleteSession: ['Delete session','Удалить сессию','Eliminar sesión'],
+  deleteConfirm: ['Delete “{0}” from the local client store? A backup will be saved.','Удалить «{0}» из локального хранилища клиента? Будет сохранена резервная копия.','¿Eliminar «{0}» del registro local? Se guardará una copia de seguridad.'],
+  deleted: ['Session deleted; local backup saved','Сессия удалена; локальная копия сохранена','Sesión eliminada; copia local guardada'],
   library: ['Local session library','Локальная библиотека сессий','Biblioteca local de sesiones'],
   local: ['● local','● локально','● local'],
   theme: ['Theme','Тема','Tema'],

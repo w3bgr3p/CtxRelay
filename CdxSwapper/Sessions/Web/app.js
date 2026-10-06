@@ -111,6 +111,7 @@ async function selectSession(key, quiet=false, jumpToMatch=false) {
     if(s.metadata_only&&s.provider!=='claude')$('#detail [data-action="resume"]').disabled=true;
     $('.actions').insertAdjacentHTML('afterbegin',Object.entries(clients).filter(([name])=>name!==s.provider).map(([name,title])=>`<button class="primary" data-action="continue-${name}" ${s.metadata_only?'disabled':''}>${t('convert',name==='antigravity'?'Antigravity':title)}</button>`).join(''));
     if(s.provider!=='antigravity')$('.actions').insertAdjacentHTML('beforeend',`<button data-action="continue-antigravity-ide" ${s.metadata_only?'disabled':''}>${t('convert','Antigravity IDE')}</button>`);
+    $('.actions').insertAdjacentHTML('beforeend',`<button data-action="delete" style="color:var(--danger,#ef6666)">${t('deleteSession')}</button>`);
     if(s.provider==='antigravity') {
       const button=$('#detail [data-action="resume"]');button.dataset.action='open-client';button.disabled=false;button.textContent=t('openClient',s.client);
       $('.actions').insertAdjacentHTML('afterend',`<p class="card-snippet">${t('antigravityOpenHint')}</p>`);
@@ -169,10 +170,13 @@ $('#detail').addEventListener('click',async e=>{
   if(b.id==='older') return older();
   if(b.id==='reload-detail') return selectSession(selected,true);
   if(!b.dataset.action)return;
+  const key=selected;
+  if(b.dataset.action==='delete' && !confirm(t('deleteConfirm',sessions.find(s=>s.key===key)?.title||key)))return;
   b.disabled=true;
   try{
     if(b.dataset.action.startsWith('continue-'))toast(t('converting'));
-    const result=await api('/api/action',{key:selected,action:b.dataset.action});
+    const result=await api('/api/action',{key,action:b.dataset.action,confirmed:b.dataset.action==='delete'});
+    if(result.deleted){if(selected===key){++detailVersion;selected=null;$('#detail').innerHTML=`<div class="empty">${t('deleted')}</div>`;}delete matches[key];await refresh();toast(t('deleted'));return;}
     if(result.conversion){
       toast(t('converted',result.conversion.provider,result.conversion.messages));
       $('#search').value='';matches={};provider='all';

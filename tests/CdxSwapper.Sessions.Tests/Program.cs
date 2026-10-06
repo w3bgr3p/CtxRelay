@@ -117,6 +117,7 @@ static class Program
         if (desktopCommand.Contains("codex resume") || !desktopCommand.Contains("codex://threads/")) throw new Exception("Desktop launch used CLI resume");
         Console.WriteLine("PASS: Desktop launch command=" + desktopCommand);
         AntigravityTests.Run().GetAwaiter().GetResult();
+        DeletionTests.Run().GetAwaiter().GetResult();
         return 0;
     }
 }

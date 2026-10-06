@@ -43,7 +43,9 @@ Hermes sources: `%HERMES_HOME%` or `%LOCALAPPDATA%\hermes`, using `state.db` in 
 
 The HTML interface, fonts and C# API are embedded in the executable and served inside WebView2 at a private virtual origin. No TCP server or listening port is used. The source checkout and `clodex_manager` are not required at runtime.
 
-The derived search index, conversion exports/manifests and WebView2 profile live in `<account store>\.sessions\`. Search indexes in the background and persists between launches; results are partial until indexing finishes. This cache includes conversation text. The Sources dialog displays scan/index errors. Source journals and state databases are read without modification; conversion writes only new sessions.
+The derived search index, conversion exports/manifests and WebView2 profile live in `<account store>\.sessions\`. Search indexes in the background and persists between launches; results are partial until indexing finishes. This cache includes conversation text. The Sources dialog displays scan/index errors. Browsing reads source journals and databases without modification; conversion writes new sessions.
+
+The session detail has a **Delete session** action with confirmation. It removes the selected local journal and client index entry, or the selected Hermes session and its messages from the shared database. Claude Desktop cards and Antigravity session files are included. Backups and original file locations are saved under `<account store>\.sessions\deleted\`; shared databases are backed up through SQLite before changing them. The list and search index refresh after deletion. This removes local data; it does not delete a cloud conversation. A client that keeps an active conversation in memory may need to be closed before deleting it.
 
 ## Local files
 
