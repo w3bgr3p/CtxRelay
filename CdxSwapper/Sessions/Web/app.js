@@ -19,6 +19,7 @@ function updateSelection(){
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date = value => value ? new Date(value).toLocaleString(locale, {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
 const bytes = n => n > 1048576 ? (n/1048576).toFixed(1)+' MB' : (n/1024).toFixed(1)+' KB';
+const SessionTitle=s=>s?(s.title||s.id).split(/\r?\n/)[0].slice(0,180):'';
 function highlighted(text) {
   const query = $('#search').value.trim().toLowerCase();
   if (!query || !$('#content-search').checked) return esc(text);
@@ -62,6 +63,11 @@ async function api(path, body) {
   return data;
 }
 function toast(text) { clearTimeout(toastTimer); $('#toast').textContent=text; $('#toast').style.display='block'; toastTimer=setTimeout(()=>$('#toast').style.display='none',4500); }
+function confirmDeletion(text){
+  const dialog=$('#confirm-dialog');if(dialog.open)return Promise.resolve(false);
+  $('#confirm-text').textContent=text;dialog.returnValue='cancel';
+  return new Promise(resolve=>{dialog.addEventListener('close',()=>resolve(dialog.returnValue==='delete'),{once:true});dialog.showModal();});
+}
 function renderList() {
   const query = $('#search').value.trim().toLowerCase();
   let items = sessions.filter(s => (provider==='all'||s.provider===provider) && ($('#agents').checked||!s.subagent) && ($('#status').value==='all'||s.archived===($('#status').value==='archived')) && (!query||[s.title,s.id,s.cwd,s.path,s.model].join(' ').toLowerCase().includes(query)||($('#content-search').checked&&matches[s.key])));
@@ -189,7 +195,7 @@ $('#select-visible').addEventListener('change',e=>{for(const card of $('#list').
 $('#clear-selection').addEventListener('click',()=>{checkedSessions.clear();renderList();});
 $('#close-batch').addEventListener('click',()=>$('#batch-dialog').close());
 $('#delete-selected').addEventListener('click',async()=>{
-  const keys=[...checkedSessions];if(batchBusy||!keys.length||!confirm(t('batchConfirm',keys.length)))return;
+  const keys=[...checkedSessions];if(batchBusy||!keys.length||!await confirmDeletion(t('batchConfirm',keys.length)))return;
   batchBusy=true;renderList();
   try{
     const {results}=await api('/api/delete-batch',{keys,confirmed:true});
@@ -214,7 +220,7 @@ $('#detail').addEventListener('click',async e=>{
   if(b.id==='reload-detail') return selectSession(selected,true);
   if(!b.dataset.action)return;
   const key=selected;
-  if(b.dataset.action==='delete' && !confirm(t('deleteConfirm',sessions.find(s=>s.key===key)?.title||key)))return;
+  if(b.dataset.action==='delete' && !await confirmDeletion(t('deleteConfirm',SessionTitle(sessions.find(s=>s.key===key))||key)))return;
   b.disabled=true;
   try{
     if(b.dataset.action.startsWith('continue-'))toast(t('converting'));

@@ -180,12 +180,13 @@ static class UiSmoke
             check(checkedSessions.has(s.key)&&!$('#delete-selected').disabled,'checkbox enables batch action');
             const largeBatch=await api('/api/delete-batch',{keys:Array(200).fill('missing-key-with-24-chars'),confirmed:true});
             check(largeBatch.results.length===1&&!largeBatch.results[0].deleted,'large batch transport and duplicate handling');
-            const originalConfirm=window.confirm;let asked=false;
-            window.confirm=()=>{asked=true;return false;};$('#delete-selected').click();
-            check(asked&&sessions.some(x=>x.key===s.key),'cancel leaves session intact');
-            window.confirm=()=>true;$('#delete-selected').click();
+            $('#delete-selected').click();check($('#confirm-dialog').open,'themed confirmation displayed');
+            $('#confirm-dialog [value="cancel"]').click();await new Promise(r=>setTimeout(r,50));
+            check(!$('#confirm-dialog').open&&sessions.some(x=>x.key===s.key),'cancel leaves session intact');
+            const escapeCheck=confirmDeletion('escape test');$('#confirm-dialog').dispatchEvent(new Event('cancel',{cancelable:true}));$('#confirm-dialog').close('');check(!await escapeCheck,'dismissal never confirms deletion');
+            $('#delete-selected').click();check($('#confirm-dialog').open,'confirmation reopens');$('#confirm-dialog [value="delete"]').click();
             for(let i=0;i<100&&sessions.some(x=>x.key===s.key);i++)await new Promise(r=>setTimeout(r,50));
-            window.confirm=originalConfirm;check(!sessions.some(x=>x.key===s.key),'confirmed deletion updates list');
+            check(!sessions.some(x=>x.key===s.key),'confirmed deletion updates list');
             check(!checkedSessions.has(s.key),'successful deletion clears selection');
             for(let i=0;i<100&&!$('#batch-dialog').open;i++)await new Promise(r=>setTimeout(r,50));
             check($('#batch-dialog').open,'batch results displayed');$('#close-batch').click();

@@ -2,6 +2,7 @@
 const language = ['en','ru','es'].includes(document.documentElement.lang) ? document.documentElement.lang : 'en';
 const locale = document.documentElement.dataset.locale || language;
 const strings = {
+  cancel: ['Cancel','Отмена','Cancelar'],
   showCalls: ['Show calls','Показывать вызовы','Mostrar llamadas'],
   selectVisible: ['Select visible','Выбрать видимые','Seleccionar visibles'],
   clearSelection: ['Clear','Снять выбор','Limpiar'],
