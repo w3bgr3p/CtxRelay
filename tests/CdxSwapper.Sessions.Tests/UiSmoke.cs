@@ -117,6 +117,15 @@ static class UiSmoke
             const gemini=sessions.find(s=>s.provider==='antigravity'&&s.source==='ide'&&!s.metadata_only);
             $('#providers [data-provider="antigravity"]').click();check($('#list').querySelectorAll('.card').length===5,'Gemini filter');
             await selectSession(gemini.key);
+            check($('#messages .message.tool')!==null,'Gemini native calls rendered as tools');
+            const showCalls=$('#show-calls');showCalls.checked=false;showCalls.dispatchEvent(new Event('change'));
+            check([...$('#messages').querySelectorAll('.message.tool')].every(e=>getComputedStyle(e).display==='none'),'all calls hidden');
+            check([...$('#messages').querySelectorAll('.message.assistant')].every(e=>getComputedStyle(e).display!=='none'),'assistant prose remains visible');
+            showCalls.checked=true;showCalls.dispatchEvent(new Event('change'));
+            check(getComputedStyle($('#messages .message.tool')).display!=='none','show calls restores tools');
+            const legacy=document.createElement('div');legacy.innerHTML=messageHTML({role:'assistant',text:'Answer\n\n[Historical tool calls]\n[{"function":{"name":"Read","arguments":"{\\"path\\":\\"sample.txt\\"}"}}]',timestamp:''});
+            check(legacy.querySelectorAll('.message.assistant').length===1&&legacy.querySelectorAll('.message.tool').length===1,'legacy calls split from prose');
+            check(legacy.querySelector('.message.tool pre').textContent.includes('sample.txt'),'legacy tool arguments decoded');
             check($('#detail [data-action="open-client"]').textContent.includes('Antigravity IDE'),'IDE launcher label');
             check($('#detail [data-action="continue-codex"]')&&$('#detail [data-action="continue-claude"]')&&$('#detail [data-action="continue-hermes"]'),'Antigravity export targets');
             check(!$('#messages').querySelector('script')&&!window.pwned,'Antigravity content escaped');

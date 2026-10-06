@@ -101,6 +101,16 @@ async function refresh() {
   finally {loading=false; $('#refresh').disabled=false;}
 }
 function messageHTML(m) {
+  if(m.role!=='tool'){
+    const pattern=/^\[(?:Historical tool calls|Historical tool call \/ result|Tool calls)\][^\r\n]*(?:\r?\n(?!\s*\r?$)[^\r\n]+)*/gm;
+    const blocks=[...m.text.matchAll(pattern)];
+    if(blocks.length){let output='',offset=0;for(const block of blocks){const prose=m.text.slice(offset,block.index).trim();if(prose)output+=messageHTML({...m,text:prose});output+=messageHTML({...m,role:'tool',text:block[0].replace(/^\[[^\]]+\]\s*/, '')});offset=block.index+block[0].length;}const rest=m.text.slice(offset).trim();if(rest)output+=messageHTML({...m,text:rest});return output;}
+  }
+  if(m.role==='tool'){
+    const pretty=value=>JSON.stringify(value,(key,v)=>{if(typeof v==='string'&&/^[\[{]/.test(v.trim()))try{return JSON.parse(v);}catch(e){}return v;},2);
+    const first=m.text.indexOf('\n');
+    try{m={...m,text:pretty(JSON.parse(m.text))};}catch(e){if(first>=0)try{m={...m,text:m.text.slice(0,first)+'\n'+pretty(JSON.parse(m.text.slice(first+1)))};}catch(e){}}
+  }
   const text=`<pre>${highlighted(m.text)}</pre>${m.truncated?`<div class="truncated">${t('truncated')}</div>`:''}`;
   return `<article class="message ${esc(m.role)}"><div class="message-head"><b>${t(m.role==='user'?'you':m.role==='tool'?'tool':m.role==='metadata'?'metadata':'assistant')}</b><span>${esc(date(m.timestamp))}</span></div>${m.role==='tool'||m.role==='metadata'?`<details><summary>${t(m.role==='metadata'?'showMetadata':'showTool')}</summary>${text}</details>`:text}</article>`;
 }
@@ -193,6 +203,9 @@ $('#providers').addEventListener('click',e=>{const b=e.target.closest('[data-pro
 for(const selector of ['#status','#agents','#sort']) $(selector).addEventListener('input',renderList);
 $('#search').addEventListener('input',queryChanged);
 $('#content-search').addEventListener('change',queryChanged);
+function setShowCalls(){document.documentElement.dataset.showCalls=String($('#show-calls').checked);try{localStorage.setItem('cdx-show-calls',String($('#show-calls').checked));}catch(e){}}
+try{$('#show-calls').checked=localStorage.getItem('cdx-show-calls')!=='false';}catch(e){}
+setShowCalls();$('#show-calls').addEventListener('change',setShowCalls);
 $('#refresh').addEventListener('click',refresh);
 $('#detail').addEventListener('click',async e=>{
   const b=e.target.closest('button'); if(!b)return;

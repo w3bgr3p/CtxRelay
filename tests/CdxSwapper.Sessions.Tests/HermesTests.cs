@@ -45,7 +45,7 @@ static class HermesTests
             Check(scan.Errors.Count == 0 && scan.Sessions.Count == 2 && scan.Sessions.Select(s => s.Key).Distinct().Count() == 2, "Profiles / identical IDs must remain separate");
             var item = scan.Sessions.Single(s => s.Profile == "default");
             Check(item.Title == "Hermes title" && item.Model == "hermes-model" && item.Tokens == 30, "Hermes metadata");
-            Check(catalog.Detail(item.Key).Messages.Count == 2 && catalog.Detail(item.Key).Messages.Last().Text.Contains("DO NOT EXECUTE"), "History includes tool calls but excludes rewound rows");
+            Check(catalog.Detail(item.Key).Messages.Count == 3 && catalog.Detail(item.Key).Messages.Last().Role=="tool" && catalog.Detail(item.Key).Messages.Last().ToolName=="Bash" && catalog.Detail(item.Key).Messages.Last().Text.Contains("DO NOT EXECUTE"), "History separates native calls from assistant prose and excludes rewound rows");
             Check(SessionActions.ResumeCommand(scan.Sessions.Single(s => s.Profile == "coder")).Contains("?profile=coder") &&
                 SessionActions.ResumeCommand(item).Contains("hermes://cdx-session/hermes-one?profile=default"), "Hermes desktop resume routes correct profile");
             var export = SessionActions.ExportTranscript(item,Path.Combine(root,"transcripts"));
@@ -65,7 +65,7 @@ static class HermesTests
             for (int i = 0; i < 105; i++) { parameter.Value = "entry-" + i; command.ExecuteNonQuery(); }
             var ids = new List<string>(); long? before = null;
             do { var page = catalog.Detail(item.Key, before); ids.InsertRange(0, page.Messages.Select(m => m.Text)); before = page.Before; } while (before != null);
-            Check(ids.Count == 107 && ids.Skip(2).SequenceEqual(Enumerable.Range(0,105).Select(i => "entry-" + i)), "Hermes message-ID pagination");
+            Check(ids.Count == 108 && ids.Skip(3).SequenceEqual(Enumerable.Range(0,105).Select(i => "entry-" + i)), "Hermes message-ID pagination with separate tool records");
             using (var index = new SessionSearch(Path.Combine(root, "search.sqlite")))
             {
                 index.Sync(catalog.Scan().Sessions); await index.WaitAsync();

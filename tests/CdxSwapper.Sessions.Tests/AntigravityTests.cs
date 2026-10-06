@@ -61,7 +61,7 @@ static class AntigravityTests
             Check(scan.Sessions.Count==5,"Both Antigravity stores plus encrypted cards and native DB");
             Check(scan.Sessions.Select(s=>s.Key).Distinct().Count()==5,"Migrated IDs remain distinct by application");
             var source=scan.Sessions.Single(s=>s.Id=="shared-id"&&s.Source=="ide");
-            Check(catalog.Detail(source.Key).Messages.Count==4,"Native transcript roles");
+            Check(catalog.Detail(source.Key).Messages.Count==6 && catalog.Detail(source.Key).Messages.Where(m=>m.Role=="assistant").All(m=>!m.Text.Contains("[Tool calls]")),"Native transcript calls separated from assistant prose");
             Check(catalog.Detail(source.Key).Messages.Any(m=>m.Text.Contains("Reasoning history")),"Thinking retained");
             Check(!SessionSource.Records(source).Any(r=>r.Message.Text.Contains("private system")),"System settings excluded");
             var native=scan.Sessions.Single(s=>s.Id=="native-id"); var page=catalog.Detail(native.Key);

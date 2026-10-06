@@ -175,12 +175,14 @@ sealed class SessionCatalog
     {
         var item = Get(key);
         if (item.Provider == "hermes") return HermesStore.Detail(item, before);
-        if (item.Provider == "antigravity" && Path.GetExtension(item.Path) != ".jsonl")
+        if (item.Provider == "antigravity")
         {
             if (before < 0) throw new ArgumentException("Invalid cursor.");
-            var rows = AntigravityStore.Records(item).Where(r => before == null || r.Offset < before).TakeLast(50).ToList();
+            var groups = AntigravityStore.Records(item).Where(r => before == null || r.Offset < before).GroupBy(r=>r.Offset).TakeLast(51).ToList();
+            var more=groups.Count>50;if(more)groups.RemoveAt(0);
+            var rows=groups.SelectMany(g=>g).ToList();
             var nativeMessages = rows.Select(r => r.Message with { Truncated = r.Message.Text.Length > 60000, Text = SessionJson.Cut(r.Message.Text, 60000) }).ToList();
-            return new(item, nativeMessages, rows.Count == 50 ? rows[0].Offset : null, item.Size);
+            return new(item, nativeMessages, more ? rows[0].Offset : null, item.Size);
         }
         if (item.MetadataOnly)
         {

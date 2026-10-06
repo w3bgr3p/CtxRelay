@@ -111,10 +111,12 @@ static class HermesStore
         using var db = Open(item.Path);
         foreach (var record in Records(db, null, item.Id)) yield return record;
     }
-    public static IEnumerable<(long Offset, SessionMessage Message)> NativeRecords(SessionItem item)
+    public static IEnumerable<(long Offset, SessionMessage Message)> NativeRecords(SessionItem item,long? from=null,long? before=null)
     {
         using var db = Open(item.Path); using var cmd = db.CreateCommand();
-        cmd.CommandText = "SELECT * FROM messages WHERE session_id=$id AND active=1 ORDER BY id";
+        cmd.CommandText = "SELECT * FROM messages WHERE session_id=$id AND active=1"+(from.HasValue?" AND id >= $from":"")+(before.HasValue?" AND id < $before":"")+" ORDER BY id";
+        if(from.HasValue)cmd.Parameters.AddWithValue("$from",from.Value);
+        if(before.HasValue)cmd.Parameters.AddWithValue("$before",before.Value);
         cmd.Parameters.AddWithValue("$id",item.Id); using var reader = cmd.ExecuteReader(); var cols = Columns(reader);
         while (reader.Read())
         {
@@ -157,7 +159,7 @@ static class HermesStore
         var rows = Records(db, null, item.Id, before, 51).ToList();
         bool more = rows.Count > 50; if (more) rows.RemoveAt(rows.Count - 1);
         rows.Reverse();
-        return new(item, rows.Select(r => r.Message with { Truncated = r.Message.Text.Length > 60000,
+        return new(item, (rows.Count==0?Enumerable.Empty<(long Offset,SessionMessage Message)>():NativeRecords(item,rows[0].Offset,before)).Select(r => r.Message with { Truncated = r.Message.Text.Length > 60000,
             Text = SessionJson.Cut(r.Message.Text,60000) }).ToList(), more ? rows[0].Offset : null,
             rows.Sum(r => (long)Encoding.UTF8.GetByteCount(r.Message.Text)));
     }

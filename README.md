@@ -49,6 +49,8 @@ The session detail has a **Delete session** action with confirmation. It removes
 
 Use the checkboxes beside session cards to select several sessions, **Select visible** to select the current filtered list, and **Delete selected** to delete them with one confirmation. Selection persists across filters; the button shows the total selected count. Batch deletion saves backups for each session and reports individual failures; unsuccessful sessions remain selected for retry. Quit Claude Desktop before deleting its sessions.
 
+**Show calls** controls visibility of tool calls and results in the conversation, older pages and opened search matches. The preference persists between launches. Hermes and Gemini calls are displayed as separate collapsible tool entries; legacy textual tool blocks are separated from assistant prose and JSON arguments are decoded for readability. Hiding calls does not remove history or change conversions.
+
 ## Local files
 
 The active authentication file is `%CODEX_HOME%\auth.json`, or `%USERPROFILE%\.codex\auth.json` when `CODEX_HOME` is unset.
