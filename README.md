@@ -47,6 +47,8 @@ The derived search index, conversion exports/manifests and WebView2 profile live
 
 The session detail has a **Delete session** action with confirmation. It removes the selected local journal and client index entry, or the selected Hermes session and its messages from the shared database. Claude Desktop cards and Antigravity session files are included. Backups and original file locations are saved under `<account store>\.sessions\deleted\`; shared databases are backed up through SQLite before changing them. The list and search index refresh after deletion. This removes local data; it does not delete a cloud conversation. A client that keeps an active conversation in memory may need to be closed before deleting it.
 
+Use the checkboxes beside session cards to select several sessions, **Select visible** to select the current filtered list, and **Delete selected** to delete them with one confirmation. Selection persists across filters; the button shows the total selected count. Batch deletion saves backups for each session and reports individual failures; unsuccessful sessions remain selected for retry. Quit Claude Desktop before deleting its sessions.
+
 ## Local files
 
 The active authentication file is `%CODEX_HOME%\auth.json`, or `%USERPROFILE%\.codex\auth.json` when `CODEX_HOME` is unset.

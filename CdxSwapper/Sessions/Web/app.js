@@ -7,6 +7,15 @@ let detailVersion = 0, currentSize = 0, sourceData = {}, scanErrors = [], toastT
 let currentRevision = '';
 let matches = {}, searchTimer, searchVersion = 0, indexState = {}, indexPollBusy = false;
 let renderedSearch = '', matchVersion = 0;
+const checkedSessions=new Set();let batchBusy=false;
+function updateSelection(){
+  const visible=[...$('#list').querySelectorAll('.card')].map(c=>c.dataset.key);
+  $('#select-visible').checked=visible.length>0&&visible.every(k=>checkedSessions.has(k));
+  $('#select-visible').indeterminate=visible.some(k=>checkedSessions.has(k))&&!$('#select-visible').checked;
+  $('#delete-selected').textContent=t('deleteSelected',checkedSessions.size);
+  $('#delete-selected').disabled=batchBusy||checkedSessions.size===0;
+  $('#select-visible').disabled=batchBusy;$('#clear-selection').disabled=batchBusy||checkedSessions.size===0;
+}
 const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const date = value => value ? new Date(value).toLocaleString(locale, {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
 const bytes = n => n > 1048576 ? (n/1048576).toFixed(1)+' MB' : (n/1024).toFixed(1)+' KB';
@@ -67,15 +76,21 @@ function renderList() {
   }
   for(const card of $('#list').querySelectorAll('.card')) {
     const s=sessions.find(s=>s.key===card.dataset.key);
+    const row=document.createElement('div');row.className='card-row';card.before(row);row.append(card);
+    const check=document.createElement('input');check.type='checkbox';check.dataset.checkKey=card.dataset.key;
+    check.checked=checkedSessions.has(card.dataset.key);check.disabled=batchBusy;check.setAttribute('aria-label',t('selectSession',s?.title||s?.id));row.prepend(check);
     if(s?.client)card.querySelector('.badge').textContent=s.client;
     if(s?.metadata_only)card.insertAdjacentHTML('beforeend',`<div class="card-snippet">${t(s.provider==='antigravity'?'encryptedCard':'noJournal')}</div>`);
   }
+  updateSelection();
 }
 async function refresh() {
   if (loading) return;
   loading=true; $('#refresh').disabled=true;
   try {
-    const data=await api('/api/sessions'); sessions=data.sessions; sourceData=data.sources; scanErrors=data.errors; showIndex(data.index);renderList();
+    const data=await api('/api/sessions'); sessions=data.sessions; sourceData=data.sources; scanErrors=data.errors;
+    for(const key of checkedSessions)if(!sessions.some(s=>s.key===key))checkedSessions.delete(key);
+    showIndex(data.index);renderList();
     $('#sync').textContent=t('updated',new Date().toLocaleTimeString(locale))+(scanErrors.length?' · '+t('errors',scanErrors.length):'');
     if (selected) {
       const s=sessions.find(s=>s.key===selected);
@@ -159,6 +174,21 @@ async function older() {
   } catch(e) {toast(e.message); if(version===detailVersion) {button.disabled=false;button.textContent=t('retry');}}
 }
 $('#list').addEventListener('click',e=>{const card=e.target.closest('[data-key]');if(card) selectSession(card.dataset.key);});
+$('#list').addEventListener('change',e=>{const key=e.target.dataset.checkKey;if(!key)return;e.target.checked?checkedSessions.add(key):checkedSessions.delete(key);updateSelection();});
+$('#select-visible').addEventListener('change',e=>{for(const card of $('#list').querySelectorAll('.card'))e.target.checked?checkedSessions.add(card.dataset.key):checkedSessions.delete(card.dataset.key);renderList();});
+$('#clear-selection').addEventListener('click',()=>{checkedSessions.clear();renderList();});
+$('#close-batch').addEventListener('click',()=>$('#batch-dialog').close());
+$('#delete-selected').addEventListener('click',async()=>{
+  const keys=[...checkedSessions];if(batchBusy||!keys.length||!confirm(t('batchConfirm',keys.length)))return;
+  batchBusy=true;renderList();
+  try{
+    const {results}=await api('/api/delete-batch',{keys,confirmed:true});
+    for(const r of results)if(r.deleted){checkedSessions.delete(r.key);delete matches[r.key];if(selected===r.key){selected=null;++detailVersion;$('#detail').innerHTML=`<div class="empty">${t('deleted')}</div>`;}}
+    const failed=results.filter(r=>!r.deleted);
+    $('#batch-result').innerHTML=`<p>${t('batchSummary',results.length-failed.length,failed.length)}</p>`+failed.map(r=>`<p><b>${esc(sessions.find(s=>s.key===r.key)?.title||r.key)}</b><br>${esc(r.error)}</p>`).join('');
+    await refresh();$('#batch-dialog').showModal();
+  }catch(e){toast(e.message);}finally{batchBusy=false;renderList();}
+});
 $('#providers').addEventListener('click',e=>{const b=e.target.closest('[data-provider]');if(!b)return;provider=b.dataset.provider;$('#providers .active').classList.remove('active');b.classList.add('active');renderList();});
 for(const selector of ['#status','#agents','#sort']) $(selector).addEventListener('input',renderList);
 $('#search').addEventListener('input',queryChanged);

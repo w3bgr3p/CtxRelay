@@ -25,6 +25,17 @@ static class DeletionTests
             Check(!File.Exists(first)&&File.Exists(second),"Deletion affected another Codex session");
             Check(catalog.Scan().Sessions.Count==1,"Deleted Codex session still listed");
             Check(Directory.GetFiles(Path.Combine(root,"manager","deleted"),"*-first.jsonl",SearchOption.AllDirectories).Length==1,"Deleted journal backup missing");
+            var secondKey=catalog.Scan().Sessions.Single(s=>s.Id=="second").Key;
+            try { await api.RequestAsync("POST",new Uri("https://local/api/delete-batch"),SessionJson.Serialize(new {keys=new[] {secondKey}}));throw new Exception("Unconfirmed batch accepted"); }
+            catch(ArgumentException) { }
+            Check(File.Exists(second),"Unconfirmed batch changed files");
+            var batchResult=await api.RequestAsync("POST",new Uri("https://local/api/delete-batch"),SessionJson.Serialize(new {keys=new[] {secondKey,"missing",secondKey},confirmed=true}));
+            using(var json=System.Text.Json.JsonDocument.Parse(SessionJson.Serialize(batchResult)))
+            {
+                var outcomes=json.RootElement.Get("results").EnumerateArray().ToList();
+                Check(outcomes.Count==2&&outcomes[0].Bool("deleted")&&!outcomes[1].Bool("deleted")&&outcomes[1].Str("error").Length>0,"Batch duplicates and partial failure results incorrect");
+            }
+            Check(!File.Exists(second),"Batch did not delete selected journal");
             var hermes=Path.Combine(root,"hermes");HermesTests.Fixture(hermes);
             var hermesItems=HermesStore.Scan(hermes).ToList();var victim=hermesItems.First();
             SessionDeletion.Delete(victim,Path.Combine(root,"manager"),codex);

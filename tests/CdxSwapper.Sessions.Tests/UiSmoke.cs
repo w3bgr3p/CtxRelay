@@ -164,12 +164,22 @@ static class UiSmoke
             check((await api('/api/session?key='+s.key)).bytesRead>0,'page contract');
             $('#search').value='';await searchContent();await selectSession(s.key);
             check($('#detail [data-action="delete"]')!==null,'delete action visible');
+            const visibleToggle=$('#select-visible');visibleToggle.checked=true;visibleToggle.dispatchEvent(new Event('change'));
+            check(checkedSessions.size>1,'select visible sessions');
+            $('#clear-selection').click();check(checkedSessions.size===0,'clear selection');
+            const sessionCheck=$('#list').querySelector(`[data-check-key="${s.key}"]`);sessionCheck.checked=true;sessionCheck.dispatchEvent(new Event('change',{bubbles:true}));
+            check(checkedSessions.has(s.key)&&!$('#delete-selected').disabled,'checkbox enables batch action');
+            const largeBatch=await api('/api/delete-batch',{keys:Array(200).fill('missing-key-with-24-chars'),confirmed:true});
+            check(largeBatch.results.length===1&&!largeBatch.results[0].deleted,'large batch transport and duplicate handling');
             const originalConfirm=window.confirm;let asked=false;
-            window.confirm=()=>{asked=true;return false;};$('#detail [data-action="delete"]').click();
+            window.confirm=()=>{asked=true;return false;};$('#delete-selected').click();
             check(asked&&sessions.some(x=>x.key===s.key),'cancel leaves session intact');
-            window.confirm=()=>true;$('#detail [data-action="delete"]').click();
+            window.confirm=()=>true;$('#delete-selected').click();
             for(let i=0;i<100&&sessions.some(x=>x.key===s.key);i++)await new Promise(r=>setTimeout(r,50));
             window.confirm=originalConfirm;check(!sessions.some(x=>x.key===s.key),'confirmed deletion updates list');
+            check(!checkedSessions.has(s.key),'successful deletion clears selection');
+            for(let i=0;i<100&&!$('#batch-dialog').open;i++)await new Promise(r=>setTimeout(r,50));
+            check($('#batch-dialog').open,'batch results displayed');$('#close-batch').click();
             $('#providers [data-provider="hermes"]').click();await selectSession(h.key);
             window.smokeResult='PASS: real WebView2 four-client list, both Antigravity sources/filter/search/actions, Hermes paging/search, localized heading, token/key checks, old search hit, escaping, themes, font, native clipboard.';
           }catch(error){window.smokeResult='FAIL: '+error.message;}

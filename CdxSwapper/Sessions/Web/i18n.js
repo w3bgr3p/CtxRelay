@@ -2,6 +2,13 @@
 const language = ['en','ru','es'].includes(document.documentElement.lang) ? document.documentElement.lang : 'en';
 const locale = document.documentElement.dataset.locale || language;
 const strings = {
+  selectVisible: ['Select visible','Выбрать видимые','Seleccionar visibles'],
+  clearSelection: ['Clear','Снять выбор','Limpiar'],
+  selectSession: ['Select {0}','Выбрать {0}','Seleccionar {0}'],
+  deleteSelected: ['Delete selected ({0})','Удалить выбранные ({0})','Eliminar seleccionadas ({0})'],
+  batchConfirm: ['Delete {0} selected sessions? Local backups will be saved. Quit Claude Desktop before deleting its sessions.','Удалить выбранные сессии ({0})? Будут сохранены локальные копии. Перед удалением сессий Claude полностью закройте его.','¿Eliminar {0} sesiones? Se guardarán copias locales. Cierra Claude Desktop antes de eliminar sus sesiones.'],
+  batchResultTitle: ['Deletion results','Результат удаления','Resultado de eliminación'],
+  batchSummary: ['Deleted: {0}. Failed: {1}.','Удалено: {0}. Не удалено: {1}.','Eliminadas: {0}. Fallidas: {1}.'],
   deleteSession: ['Delete session','Удалить сессию','Eliminar sesión'],
   deleteConfirm: ['Delete “{0}” from the local client store? A backup will be saved.','Удалить «{0}» из локального хранилища клиента? Будет сохранена резервная копия.','¿Eliminar «{0}» del registro local? Se guardará una copia de seguridad.'],
   deleted: ['Session deleted; local backup saved','Сессия удалена; локальная копия сохранена','Sesión eliminada; copia local guardada'],

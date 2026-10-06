@@ -38,6 +38,22 @@ sealed class SessionApi : IDisposable
                 case "/api/match": return new { message = await Task.Run(() => catalog.Match(Get("key"), long.Parse(Get("offset")))) };
             }
         }
+        if(method=="POST" && url.AbsolutePath=="/api/delete-batch")
+        {
+            if(body.Length is 0 or > 131072)throw new ArgumentException("Invalid request size.");
+            using var batch=JsonDocument.Parse(body);
+            if(!batch.RootElement.Bool("confirmed"))throw new ArgumentException("Deletion requires confirmation.");
+            var keys=batch.RootElement.Get("keys");
+            if(keys.ValueKind!=JsonValueKind.Array || keys.GetArrayLength() is 0 or > 2000)throw new ArgumentException("Select 1–2000 sessions.");
+            var unique=keys.EnumerateArray().Select(k=>k.GetString()??throw new ArgumentException("Invalid key.")).Distinct().ToList();
+            var results=new List<object>();
+            foreach(var key in unique)
+                try { var item=catalog.Get(key);var backup=await Task.Run(()=>Delete(item));results.Add(new {key,deleted=true,backup,error=""}); }
+                catch(Exception e) when(e is IOException or UnauthorizedAccessException or InvalidOperationException or KeyNotFoundException or Microsoft.Data.Sqlite.SqliteException)
+                { results.Add(new {key,deleted=false,backup="",error=e.Message}); }
+            var scan=catalog.Scan();index.Sync(scan.Sessions);
+            return new { results };
+        }
         if (method == "POST" && url.AbsolutePath == "/api/action")
         {
             if (body.Length is 0 or > 4096) throw new ArgumentException("Invalid request size.");
@@ -46,13 +62,7 @@ sealed class SessionApi : IDisposable
             if(action=="delete")
             {
                 if(!doc.RootElement.Bool("confirmed"))throw new ArgumentException("Deletion requires confirmation.");
-                if(item.Provider=="claude" && System.Diagnostics.Process.GetProcessesByName("Claude").Any(p=>
-                    { using(p) return p.MainWindowHandle!=IntPtr.Zero; }))
-                    throw new InvalidOperationException(SessionText.Pick(
-                        "Quit Claude Desktop before deleting this session, then retry. Its in-memory session list cannot be updated by deleting files.",
-                        "Полностью закройте Claude Desktop, затем повторите удаление. Работающий клиент хранит карточку в памяти; удаление файлов не обновляет его список.",
-                        "Cierra Claude Desktop por completo y vuelve a intentar eliminar la sesión. El cliente guarda la lista en memoria."));
-                var backup=await Task.Run(()=>SessionDeletion.Delete(item,dataRoot,catalog.CodexHome));
+                var backup=await Task.Run(()=>Delete(item));
                 var scan=catalog.Scan();index.Sync(scan.Sessions);
                 return new { ok=true,deleted=true,backup };
             }
@@ -80,6 +90,14 @@ sealed class SessionApi : IDisposable
             return new { ok = true };
         }
         throw new KeyNotFoundException("Unknown API route.");
+    }
+    string Delete(SessionItem item)
+    {
+        if(item.Provider=="claude" && System.Diagnostics.Process.GetProcessesByName("Claude").Any(p=>
+            { using(p)return p.MainWindowHandle!=IntPtr.Zero; }))
+            throw new InvalidOperationException(SessionText.Pick("Quit Claude Desktop before deleting sessions.",
+                "Полностью закройте Claude Desktop перед удалением сессий.","Cierra Claude Desktop antes de eliminar sesiones."));
+        return SessionDeletion.Delete(item,dataRoot,catalog.CodexHome);
     }
     public void Dispose() => index.Dispose();
 }

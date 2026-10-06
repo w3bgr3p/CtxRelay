@@ -70,8 +70,9 @@ sealed class SessionWindow : Form
                 if (e.Request.Content != null)
                 {
                     using var reader = new StreamReader(e.Request.Content, Encoding.UTF8);
-                    var chars = new char[4097]; var length = reader.ReadBlock(chars, 0, chars.Length);
-                    if (length > 4096) throw new ArgumentException("Invalid request size.");
+                    var limit=url.AbsolutePath=="/api/delete-batch"?131072:4096;
+                    var chars = new char[limit+1]; var length = reader.ReadBlock(chars, 0, chars.Length);
+                    if (length > limit) throw new ArgumentException("Invalid request size.");
                     body = new string(chars, 0, length);
                 }
                 bytes = Encoding.UTF8.GetBytes(SessionJson.Serialize(await api.RequestAsync(e.Request.Method, url, body)));
