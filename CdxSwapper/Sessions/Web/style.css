@@ -14,4 +14,13 @@ main{display:grid;grid-template-columns:400px minmax(0,1fr);height:calc(100vh - 
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--text2)}
 .badge.hermes{color:var(--green);background:var(--green-tint);border-color:var(--green)}
 .badge.antigravity{color:var(--blue);background:var(--blue-tint);border-color:var(--blue)}
+.message.user,.message.assistant{border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin:18px 0;max-width:92%;background:var(--bg1)}
+.message.user{margin-left:auto;background:var(--blue-tint);border-color:var(--blue-tint-border);border-right:4px solid var(--blue);border-top-right-radius:2px}
+.message.assistant{margin-right:auto;border-left:4px solid var(--text2);border-top-left-radius:2px}
+.message.user:hover{background:var(--blue-tint)}.message.assistant:hover{background:var(--bg1)}
+.message.user .message-head b{color:var(--blue)}.message.assistant .message-head b{color:var(--text)}
+.message.user .message-head,.message.assistant .message-head{font-size:11px;align-items:center;justify-content:space-between;gap:16px;margin-bottom:12px}
+.message.user .message-head b,.message.assistant .message-head b{font-weight:700;letter-spacing:1px}
+.message.tool,.message.metadata{margin:10px 24px;padding:10px 14px;background:var(--bg);border-left-style:dashed}
+@media(max-width:760px){.message.user,.message.assistant{max-width:97%;padding:12px;margin-top:14px;margin-bottom:14px}.message.tool,.message.metadata{margin-left:8px;margin-right:8px}}
 @media(max-width:1100px){main{grid-template-columns:355px minmax(0,1fr)}.brand small{display:none}.filters{gap:var(--sp-4)}.top-actions{gap:var(--sp-6)}}@media(max-width:760px){body{overflow:auto;height:auto}main{display:block;height:auto}aside{height:65vh}.top-actions label,.live{display:none}#detail{min-height:70vh}}
