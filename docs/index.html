@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CtxRelay — one library for all your AI coding sessions</title>
+  <meta name="description" content="Search Codex, Claude, Hermes and Antigravity sessions in one place and continue any conversation in another client. Windows, local, single exe.">
+  <meta property="og:title" content="CtxRelay">
+  <meta property="og:description" content="One library for Codex, Claude, Hermes and Antigravity sessions. Search them, read them, relay them to another client.">
+  <meta property="og:image" content="images/library.png">
+  <link rel="icon" type="image/png" href="images/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0e10;--bg2:#11161a;--bg3:#171d22;
+      --border:#232b31;--border2:#2f3940;
+      --text:#c9d2d8;--text-dim:#64737d;--text-muted:#45525b;--prose:#93a3ad;
+      --teal:#2dd4bf;--orange:#fb923c;--blue:#60a5fa;--green:#4ade80;--amber:#fbbf24;--red:#f87171;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.6;overflow-x:hidden}
+    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:.22;pointer-events:none;z-index:0}
+    body::after{content:'';position:fixed;top:-30vh;left:50%;width:900px;height:600px;transform:translateX(-50%);background:radial-gradient(closest-side,rgba(45,212,191,.10),rgba(96,165,250,.05) 55%,transparent);pointer-events:none;z-index:0}
+    .wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:64px 24px 80px}
+    a{color:inherit}
+
+    /* HERO */
+    .hero{display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;margin-bottom:28px}
+    .hero-logo{width:150px;height:150px;filter:drop-shadow(0 10px 40px rgba(45,212,191,.25))}
+    .hero-name{font-size:clamp(44px,8vw,76px);font-weight:700;letter-spacing:-2px;color:#fff;line-height:1;margin-bottom:16px}
+    .hero-name span{background:linear-gradient(90deg,var(--teal),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:20px}
+    .tag{font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border:1px solid var(--border2);color:var(--text-dim)}
+    .tag.t{border-color:var(--teal);color:var(--teal)}
+    .tag.o{border-color:var(--orange);color:var(--orange)}
+    .tag.b{border-color:var(--blue);color:var(--blue)}
+    .hero-bio{font-family:'IBM Plex Sans',sans-serif;font-size:16px;font-weight:300;color:var(--prose);max-width:560px;line-height:1.7;border-left:2px solid var(--teal);padding-left:16px}
+    .hero-bio b{color:#e6edf1;font-weight:500}
+    .cta{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 56px}
+    .btn{font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;padding:10px 18px;border:1px solid var(--border2);color:var(--text);text-decoration:none;transition:border-color .15s,color .15s,background .15s;display:inline-flex;align-items:center;gap:8px}
+    .btn:hover{border-color:var(--teal);color:var(--teal)}
+    .btn.primary{background:var(--teal);border-color:var(--teal);color:#05201c;font-weight:600}
+    .btn.primary:hover{background:#5eead4;color:#05201c}
+    .btn small{opacity:.65;font-weight:400}
+
+    /* SECTION */
+    .section{margin-bottom:56px}
+    .section-label{font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+    .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    /* RELAY DIAGRAM */
+    .relay{border:1px solid var(--border);background:var(--bg2);padding:28px 24px}
+    .relay-row{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;align-items:center;gap:10px}
+    .node{border:1px solid var(--border2);background:var(--bg3);padding:14px 10px;text-align:center}
+    .node b{display:block;color:#fff;font-size:13px}
+    .node small{font-size:10px;color:var(--text-dim);letter-spacing:.05em}
+    .node.codex{border-color:#1f3d5c}.node.codex b{color:var(--blue)}
+    .node.claude{border-color:#5c3a1a}.node.claude b{color:var(--orange)}
+    .node.hermes{border-color:#1f4d32}.node.hermes b{color:var(--green)}
+    .node.gemini{border-color:#1d4a45}.node.gemini b{color:var(--teal)}
+    .link{color:var(--text-dim);font-size:16px;animation:pulse 2.4s ease-in-out infinite}
+    .link:nth-of-type(2){animation-delay:.4s}.link:nth-of-type(3){animation-delay:.8s}
+    @keyframes pulse{0%,100%{opacity:.35}50%{opacity:1;color:var(--teal)}}
+    .relay-notes{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-top:22px}
+    .relay-notes div{background:var(--bg);padding:12px 14px;font-family:'IBM Plex Sans',sans-serif;font-size:12.5px;color:var(--prose);line-height:1.5}
+    .relay-notes b{display:block;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:3px;font-weight:600}
+
+    /* STATS */
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--border);border:1px solid var(--border)}
+    .stat{background:var(--bg2);padding:16px 20px}
+    .stat-val{font-size:24px;font-weight:700;color:var(--teal);line-height:1;margin-bottom:6px}
+    .stat-label{font-size:10px;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+
+    /* FEATURES */
+    .feature{border:1px solid var(--border);background:var(--bg2);margin-bottom:20px}
+    .feature-header{padding:20px 24px 16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:1px solid var(--border)}
+    .feature-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:4px}
+    .feature-subtitle{font-size:11px;color:var(--text-dim);letter-spacing:.05em}
+    .feature-badges{display:flex;flex-wrap:wrap;gap:4px;flex-shrink:0;justify-content:flex-end}
+    .badge{font-size:10px;padding:2px 7px;border:1px solid var(--border2);color:var(--text-dim);white-space:nowrap}
+    .badge.g{border-color:#1f4d32;color:#5fbf80}.badge.b{border-color:#1f3d5c;color:#5b9bd5}
+    .badge.o{border-color:#5c3a1a;color:#d9874a}.badge.t{border-color:#1d4a45;color:#3fbfae}
+    .feature-body{padding:20px 24px}
+    .feature-desc{font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:var(--prose);line-height:1.75;margin-bottom:14px}
+    .feature-desc:last-child{margin-bottom:0}
+    .feature-desc strong{color:#d3dde3;font-weight:500}
+    .feature-desc code{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--teal);background:var(--bg3);border:1px solid var(--border2);padding:1px 5px}
+
+    /* SCREENSHOTS */
+    .screenshots{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+    .screenshots.single{grid-template-columns:1fr}
+    .screenshots.three{grid-template-columns:repeat(3,1fr)}
+    .ss{border:1px solid var(--border2);overflow:hidden;aspect-ratio:16/10;position:relative;background:var(--bg3);cursor:zoom-in}
+    .screenshots.single .ss{aspect-ratio:16/9.6}
+    .ss img{width:100%;height:100%;object-fit:cover;object-position:top left;display:block;opacity:.9;transition:opacity .2s,transform .4s}
+    .ss:hover img{opacity:1;transform:scale(1.01)}
+    .ss-label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#9aa7af;padding:18px 10px 6px}
+
+    /* TRAY MOCK */
+    .tray-demo{display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:start}
+    .menu{width:340px;max-width:100%;background:#1b1f23;border:1px solid #30373d;box-shadow:0 18px 50px rgba(0,0,0,.55);padding:6px 0;font-family:'Segoe UI','IBM Plex Sans',sans-serif;font-size:12.5px;color:#d7dde2}
+    .menu-cap{padding:6px 14px;font-size:11px;color:#7d8a93}
+    .menu-item{display:flex;align-items:center;gap:10px;padding:7px 14px}
+    .menu-item:hover{background:#262c32}
+    .menu-item .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .menu-item .name{flex:1}
+    .menu-item .name b{font-weight:600}
+    .menu-item .right{color:#93a0a9;font-variant-numeric:tabular-nums;font-size:12px}
+    .menu-item.active .name::after{content:' ✓';color:var(--teal)}
+    .menu-sep{height:1px;background:#30373d;margin:5px 0}
+    .taskbar{display:flex;align-items:center;gap:8px;margin-top:10px;width:340px;max-width:100%;justify-content:flex-end;padding:6px 10px;background:#15191c;border:1px solid #262d33;font-family:'Segoe UI',sans-serif;font-size:11px;color:#8a979f}
+    .tray-icon{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:var(--green);padding:0 4px;border:1px solid #2a3a30;background:#0f1612}
+    .legend{display:flex;flex-direction:column;gap:6px;margin-top:14px;font-size:11px;color:var(--text-dim)}
+    .legend span::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px;vertical-align:middle;background:var(--c)}
+
+    /* INSTALL */
+    .install{border:1px solid var(--border);background:var(--bg2);padding:20px 24px}
+    .install-title{font-size:11px;font-weight:600;color:#fff;margin-bottom:14px;letter-spacing:.04em}
+    .install-step{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;color:var(--prose);line-height:1.6}
+    .install-step:last-child{margin-bottom:0}
+    .install-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--teal);border:1px solid var(--teal);padding:1px 6px;flex-shrink:0;margin-top:2px;min-width:30px;text-align:center}
+    .install-num.opt{color:var(--text-dim);border-color:var(--border2)}
+    .install-step a{color:var(--teal)}
+    .install-step code{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--teal);background:var(--bg3);border:1px solid var(--border2);padding:1px 5px;white-space:nowrap}
+
+    /* PRIVACY */
+    .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--border);border:1px solid var(--border)}
+    .fact{background:var(--bg2);padding:16px 20px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;color:var(--prose);line-height:1.6}
+    .fact b{display:block;font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;margin-bottom:4px;font-weight:600}
+
+    footer{margin-top:64px;padding-top:20px;border-top:1px solid var(--border);font-size:10px;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;text-align:center}
+    footer a{color:var(--text-dim);text-decoration:none}footer a:hover{color:var(--teal)}
+
+    /* LIGHTBOX */
+    #lb{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);cursor:zoom-out;align-items:center;justify-content:center}
+    #lb.on{display:flex}
+    #lb img{max-width:94vw;max-height:92vh;object-fit:contain;box-shadow:0 0 80px rgba(0,0,0,.8);border:1px solid var(--border2)}
+    #lb-close{position:fixed;top:20px;right:24px;color:var(--text-dim);font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer}
+
+    @media(max-width:720px){
+      .hero{grid-template-columns:1fr}
+      .hero-logo{width:96px;height:96px;order:-1}
+      .relay-row{grid-template-columns:1fr 1fr;gap:8px}
+      .relay-row .link{display:none}
+      .relay-notes{grid-template-columns:1fr}
+      .tray-demo{grid-template-columns:1fr}
+      .screenshots,.screenshots.three{grid-template-columns:1fr}
+      .feature-header{flex-direction:column}
+      .feature-badges{justify-content:flex-start}
+    }
+    @media(prefers-reduced-motion:reduce){.link{animation:none}.ss img{transition:none}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <!-- HERO -->
+  <header class="hero">
+    <div>
+      <h1 class="hero-name">Ctx<span>Relay</span></h1>
+      <div class="hero-tags">
+        <span class="tag b">Codex</span>
+        <span class="tag o">Claude</span>
+        <span class="tag t">Hermes</span>
+        <span class="tag t">Antigravity</span>
+        <span class="tag">Windows</span>
+        <span class="tag">Local-only</span>
+      </div>
+      <p class="hero-bio">
+        <b>One library for all your AI coding sessions.</b>
+        Find any conversation from Codex, Claude, Hermes or Antigravity in seconds —
+        and continue it in a different client without losing the context.
+      </p>
+    </div>
+    <img class="hero-logo" src="images/logo.png" alt="CtxRelay logo" width="150" height="150">
+  </header>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/w3bgr3p/CtxRelay/releases/latest/download/CtxRelay.exe">↓ Download CtxRelay.exe <small>Windows x64</small></a>
+    <a class="btn" href="https://github.com/w3bgr3p/CtxRelay">GitHub</a>
+    <a class="btn" href="#install">How to install</a>
+  </div>
+
+  <!-- RELAY -->
+  <section class="section">
+    <div class="section-label">The idea</div>
+    <div class="relay">
+      <div class="relay-row">
+        <div class="node codex"><b>Codex</b><small>CLI · Desktop</small></div>
+        <span class="link">⇄</span>
+        <div class="node claude"><b>Claude</b><small>Code · Desktop</small></div>
+        <span class="link">⇄</span>
+        <div class="node hermes"><b>Hermes</b><small>CLI · Desktop</small></div>
+        <span class="link">⇄</span>
+        <div class="node gemini"><b>Antigravity</b><small>IDE · App</small></div>
+      </div>
+      <div class="relay-notes">
+        <div><b>Native session</b>The target client gets a real session of its own format, not a pasted wall of text.</div>
+        <div><b>Tools kept</b>Tool calls and results are carried over as history — nothing is re-executed.</div>
+        <div><b>Source untouched</b>The original conversation stays exactly as it was.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section class="section">
+    <div class="section-label">At a glance</div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val">4</div><div class="stat-label">clients in one list</div></div>
+      <div class="stat"><div class="stat-val">1</div><div class="stat-label">exe · no installer</div></div>
+      <div class="stat"><div class="stat-val">0</div><div class="stat-label">open ports · telemetry</div></div>
+      <div class="stat"><div class="stat-val">3</div><div class="stat-label">languages: en · ru · es</div></div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="section-label">Features</div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div>
+          <div class="feature-name">Session Library</div>
+          <div class="feature-subtitle">Every local session · archives · subagents · one window</div>
+        </div>
+        <div class="feature-badges"><span class="badge b">Codex</span><span class="badge o">Claude</span><span class="badge g">Hermes</span><span class="badge t">Antigravity</span></div>
+      </div>
+      <div class="feature-body">
+        <p class="feature-desc">
+          CtxRelay finds sessions on its own — Codex journals, Claude Code and Claude Desktop projects,
+          Hermes databases with all profiles, Antigravity IDE and app conversations. Filter by client or status,
+          sort, and open any conversation with <strong>tool calls shown as collapsible entries</strong>.
+        </p>
+        <p class="feature-desc">
+          From the detail panel: <strong>open the session in its desktop app</strong>, copy the resume command,
+          reveal the file or jump to the project folder.
+        </p>
+        <div class="screenshots single">
+          <div class="ss"><img src="images/library.png" alt="Session library with a Claude conversation open" loading="lazy"><div class="ss-label">Library · conversation · relay buttons</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div>
+          <div class="feature-name">Full-text Search</div>
+          <div class="feature-subtitle">Search inside messages, not just titles · jump to the match</div>
+        </div>
+        <div class="feature-badges"><span class="badge t">Index</span><span class="badge b">Snippets</span></div>
+      </div>
+      <div class="feature-body">
+        <p class="feature-desc">
+          “Where did we fix that retry bug?” Type a word — CtxRelay searches the <strong>full text of every conversation</strong>
+          across all clients, shows matching snippets right in the list and jumps straight to the message,
+          even if it is hundreds of entries back. The index builds in the background and survives restarts.
+        </p>
+        <div class="screenshots single">
+          <div class="ss"><img src="images/search.png" alt="Content search with highlighted matches" loading="lazy"><div class="ss-label">Search · snippets · matched messages</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div>
+          <div class="feature-name">Continue Elsewhere</div>
+          <div class="feature-subtitle">Ran out of limits? Switch the client, keep the context</div>
+        </div>
+        <div class="feature-badges"><span class="badge t">Relay</span><span class="badge g">Native</span></div>
+      </div>
+      <div class="feature-body">
+        <p class="feature-desc">
+          Click <code>⇄ Continue in Codex</code> (or Claude, Hermes, Antigravity) and CtxRelay creates a new
+          <strong>native session</strong> in that client with the whole history — messages, tool calls and their results.
+          The new session shows up in the library, one click away from its app. Repeat an unchanged conversion and the existing copy is reused.
+        </p>
+        <p class="feature-desc">
+          Handy when one assistant hits its usage limit mid-task, or when another one is simply better at the next step.
+        </p>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div>
+          <div class="feature-name">Limits in the Tray</div>
+          <div class="feature-subtitle">Codex and Claude usage at a glance · switch Codex accounts</div>
+        </div>
+        <div class="feature-badges"><span class="badge b">Codex</span><span class="badge o">Claude</span><span class="badge g">Auto-refresh</span></div>
+      </div>
+      <div class="feature-body">
+        <div class="tray-demo">
+          <div>
+            <div class="menu" aria-label="Tray menu example">
+              <div class="menu-cap">Limits as of 6:40 PM</div>
+              <div class="menu-item active"><span class="dot" style="background:var(--green)"></span><span class="name"><b>work</b></span><span class="right">5h 82% · week 64%</span></div>
+              <div class="menu-item"><span class="dot" style="background:var(--amber)"></span><span class="name">personal</span><span class="right">5h 27% · week 51%</span></div>
+              <div class="menu-item"><span class="dot" style="background:var(--red)"></span><span class="name">team</span><span class="right">limited until 8:15 PM</span></div>
+              <div class="menu-sep"></div>
+              <div class="menu-item"><span class="dot" style="background:var(--green)"></span><span class="name">Claude</span><span class="right">5h 71% · week 90%</span></div>
+              <div class="menu-sep"></div>
+              <div class="menu-item"><span class="name">Refresh limits</span></div>
+              <div class="menu-item"><span class="name">Open folder</span></div>
+              <div class="menu-item"><span class="name">Start with Windows</span><span class="right">on</span></div>
+              <div class="menu-item"><span class="name">Exit</span></div>
+            </div>
+            <div class="taskbar">ENG <span class="tray-icon" title="Remaining limit of the active account">82</span> 6:40 PM</div>
+          </div>
+          <div>
+            <p class="feature-desc">
+              The tray icon is a <strong>big number: what's left of your Codex limit</strong> — the tighter of the 5-hour and weekly windows.
+              Right-click for every saved account and your Claude limits.
+            </p>
+            <p class="feature-desc">
+              <strong>Several Codex accounts?</strong> Click one to switch: CtxRelay saves the current credentials,
+              swaps them and restarts ChatGPT. Expired tokens are renewed automatically, new accounts are picked up when you sign in.
+            </p>
+            <div class="legend">
+              <span style="--c:var(--green)">more than 35% left</span>
+              <span style="--c:var(--amber)">11–35% left</span>
+              <span style="--c:var(--red)">10% or less</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feature">
+      <div class="feature-header">
+        <div>
+          <div class="feature-name">Cleanup &amp; Themes</div>
+          <div class="feature-subtitle">Batch delete with backups · Dark · Light · Hyper · Graphite</div>
+        </div>
+        <div class="feature-badges"><span class="badge o">Backups</span><span class="badge t">4 themes</span></div>
+      </div>
+      <div class="feature-body">
+        <p class="feature-desc">
+          Tick sessions and delete them in one go — each one is <strong>backed up first</strong>, so nothing is lost by accident.
+          Pick the look you like; the interface follows your Windows language.
+        </p>
+        <div class="screenshots three">
+          <div class="ss"><img src="images/theme-light.png" alt="Light theme" loading="lazy"><div class="ss-label">Light</div></div>
+          <div class="ss"><img src="images/theme-hyper.png" alt="Hyper theme" loading="lazy"><div class="ss-label">Hyper</div></div>
+          <div class="ss"><img src="images/theme-graphite.png" alt="Graphite theme" loading="lazy"><div class="ss-label">Graphite</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL -->
+  <section class="section" id="install">
+    <div class="section-label">Install</div>
+    <div class="install">
+      <div class="install-title">Windows 10 / 11 · x64</div>
+      <div class="install-step"><span class="install-num">1</span><span>Install <a href="https://dotnet.microsoft.com/download/dotnet/8.0">.NET 8 Desktop Runtime</a> (x64) if you don't have it.</span></div>
+      <div class="install-step"><span class="install-num">2</span><span>Download <a href="https://github.com/w3bgr3p/CtxRelay/releases/latest/download/CtxRelay.exe">CtxRelay.exe</a> and run it — the library opens, the limits appear in the tray.</span></div>
+      <div class="install-step"><span class="install-num opt">opt</span><span>Closing the window keeps CtxRelay in the tray. Turn on <code>Start with Windows</code> from the tray menu, or launch with <code>--tray</code>.</span></div>
+      <div class="install-step"><span class="install-num opt">opt</span><span>Needs <a href="https://developer.microsoft.com/microsoft-edge/webview2/">WebView2 Runtime</a> — already part of most Windows 10/11 installs.</span></div>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section class="section">
+    <div class="section-label">Your data</div>
+    <div class="facts">
+      <div class="fact"><b>Stays on your machine</b>Sessions are read from local files. No accounts, no cloud, no telemetry, no listening ports.</div>
+      <div class="fact"><b>Read-only by default</b>Browsing never changes your history. Only relay (writes a new session) and delete (after a backup) touch anything.</div>
+      <div class="fact"><b>Network, only for limits</b>Usage limits and token renewal talk to OpenAI and Anthropic with your own credentials. Nothing else goes out.</div>
+    </div>
+  </section>
+
+  <div class="cta" style="margin-bottom:0">
+    <a class="btn primary" href="https://github.com/w3bgr3p/CtxRelay/releases/latest/download/CtxRelay.exe">↓ Download CtxRelay.exe</a>
+    <a class="btn" href="https://github.com/w3bgr3p/CtxRelay">Source on GitHub</a>
+  </div>
+
+  <footer>CtxRelay · built by <a href="https://github.com/w3bgr3p">w3bgr3p</a> · no accounts · no telemetry · local-first</footer>
+</div>
+<div id="lb" role="dialog" aria-label="Screenshot"><span id="lb-close">close ✕</span><img alt=""></div>
+<script>
+  const lb = document.getElementById('lb'), lbImg = lb.querySelector('img');
+  document.querySelectorAll('.ss').forEach(el => el.addEventListener('click', () => {
+    const img = el.querySelector('img'); lbImg.src = img.src; lbImg.alt = img.alt; lb.classList.add('on');
+  }));
+  lb.addEventListener('click', () => lb.classList.remove('on'));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') lb.classList.remove('on'); });
+</script>
+</body>
+</html>
