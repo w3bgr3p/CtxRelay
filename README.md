@@ -75,21 +75,6 @@ dotnet publish CtxDeck/CtxDeck.csproj -c Release -o dist
 
 Output: `dist\CtxDeck.exe`. The build embeds `icon.ico`, which contains sizes from 16 to 256 pixels.
 
-Run the isolated token refresh and persistence checks (no real credentials or network requests):
-
-```powershell
-dotnet run --project tests/CtxDeck.Tests/CtxDeck.Tests.csproj -c Release
-```
-
-Session parsing, Desktop linking, UTF-8 pagination, Hermes SQLite profiles/WAL/rewinds, persistent search invalidation and round-trip conversion checks use temporary fixtures:
-
-```powershell
-dotnet run --project tests/CtxDeck.Sessions.Tests -c Release
-dotnet run --project tests/CtxDeck.Sessions.Tests -c Release -- --ui
-```
-
-The `--ui` check opens a real WebView2 window with temporary journals/databases, verifies all four clients (including both Antigravity sources), the interface/API/clipboard, live search invalidation and captures `sessions-ui.png` beside the test executable. Add `--culture=ru-RU` or `--culture=es-MX` to check localization; unsupported cultures fall back to English. `--native` verifies a generated Codex session through the installed Codex app-server without running model inference. `--native-hermes` verifies schema initialization and native export of C# imported history through the installed Hermes CLI, also without inference. `--native-antigravity-app` verifies import, the actual application's selected chat URL, visible user/assistant messages and expanded tool arguments/output. `--native-antigravity` verifies IDE import and focus. These Antigravity checks create local test conversations without model inference. `--hermes-live` and `--antigravity-live` perform read-only scans and print counts from real stores.
-
 ## Python CLI
 
 The companion `ctxdeck.py` supports account listing, usage checks, continuous synchronization, and switching from a terminal.

@@ -19,3 +19,6 @@ check.txt
 .backup/
 *.refresh.lock
 *.cdx_tmp
+/docs/superpowers/
+/promo/
+/tests/
