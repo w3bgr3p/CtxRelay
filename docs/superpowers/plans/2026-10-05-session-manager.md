@@ -2,7 +2,7 @@
 
 > Execution: native implementation in this chat, within the user's approved integration scope.
 
-**Goal:** Make Clodex Manager the C# main window of CdxSwapper and retain account actions in the tray.
+**Goal:** Make Clodex Manager the C# main window of CtxDeck and retain account actions in the tray.
 
 **Architecture:** Embedded web assets in WinForms WebView2, private virtual resource/API interception, C# session services. Read-only source discovery; per-user SQLite search cache and conversion manifests.
 

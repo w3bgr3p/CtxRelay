@@ -1,15 +1,15 @@
-# CdxSwapper
+# CtxDeck
 
 A Windows session manager for Codex, Claude, Hermes and Gemini (Antigravity IDE/application) with a tray utility for switching saved Codex accounts and monitoring their remaining usage limits. Session management runs entirely in C#; the optional Python companion remains available for account operations.
 
 ## Download and run
 
 1. Install [.NET 8 Desktop Runtime for Windows x64](https://dotnet.microsoft.com/en-us/download/dotnet/8.0). Select **.NET Desktop Runtime → Windows → x64** on the download page.
-2. Download `CdxSwapper.exe` from [Releases](https://github.com/w3bgr3p/cdxSwapper/releases/latest).
+2. Download `CtxDeck.exe` from [Releases](https://github.com/w3bgr3p/CtxDeck/releases/latest).
 3. Install [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) if it is not already installed.
 4. Run the executable. The session library opens and the account monitor appears in the Windows notification area.
 
-The release is a single executable; no installer or Python installation is required. The main window and tray automatically follow the Windows display language: English, Russian, or Spanish. English is the default and fallback for unsupported languages. Restart CdxSwapper after changing the Windows display language. Dates and times follow your regional settings.
+The release is a single executable; no installer or Python installation is required. The main window and tray automatically follow the Windows display language: English, Russian, or Spanish. English is the default and fallback for unsupported languages. Restart CtxDeck after changing the Windows display language. Dates and times follow your regional settings.
 
 ## Features
 
@@ -55,7 +55,7 @@ Use the checkboxes beside session cards to select several sessions, **Select vis
 
 The active authentication file is `%CODEX_HOME%\auth.json`, or `%USERPROFILE%\.codex\auth.json` when `CODEX_HOME` is unset.
 
-Saved accounts live in a sibling `cdxSwapper` directory, normally `%USERPROFILE%\cdxSwapper\<name>\auth.json`. This directory also contains `usage.json`, `settings.json`, `cdxSwapper.log`, and `.backup\`.
+Saved accounts live in a sibling `CtxDeck` directory, normally `%USERPROFILE%\CtxDeck\<name>\auth.json`. Existing installations reuse the sibling `cdxSwapper` directory when no `CtxDeck` store exists, preserving accounts, settings, backups and session caches. This directory also contains `usage.json`, `settings.json`, `CtxDeck.log`, and `.backup\`.
 
 On startup, the tray application sets `cli_auth_credentials_store = "file"` in the Codex `config.toml` if necessary, backing up the previous configuration. Restart Codex after this setting changes. Saved authentication files contain credentials; keep the account directory private.
 
@@ -63,36 +63,36 @@ Usage requests use the account access token. Automatic renewal uses the saved OA
 
 If a refresh token is missing, expired, revoked, or already used, sign into that account in Codex again. Permanently rejected refresh tokens are not repeatedly submitted during the current run; new credentials allow recovery. Temporary failures are retried on the next refresh of usage limits. The Python CLI does not renew tokens; automatic token renewal is part of the tray application and its `--check` mode.
 
-Run `CdxSwapper.exe --check` to synchronize accounts and write usage results to `check.txt` in the account directory without opening the tray interface.
+Run `CtxDeck.exe --check` to synchronize accounts and write usage results to `check.txt` in the account directory without opening the tray interface.
 
 ## Build
 
 Requires the .NET 8 SDK or a compatible newer SDK on Windows.
 
 ```powershell
-dotnet publish CdxSwapper/CdxSwapper.csproj -c Release -o dist
+dotnet publish CtxDeck/CtxDeck.csproj -c Release -o dist
 ```
 
-Output: `dist\CdxSwapper.exe`. The build embeds `icon.ico`, which contains sizes from 16 to 256 pixels.
+Output: `dist\CtxDeck.exe`. The build embeds `icon.ico`, which contains sizes from 16 to 256 pixels.
 
 Run the isolated token refresh and persistence checks (no real credentials or network requests):
 
 ```powershell
-dotnet run --project tests/CdxSwapper.Tests/CdxSwapper.Tests.csproj -c Release
+dotnet run --project tests/CtxDeck.Tests/CtxDeck.Tests.csproj -c Release
 ```
 
 Session parsing, Desktop linking, UTF-8 pagination, Hermes SQLite profiles/WAL/rewinds, persistent search invalidation and round-trip conversion checks use temporary fixtures:
 
 ```powershell
-dotnet run --project tests/CdxSwapper.Sessions.Tests -c Release
-dotnet run --project tests/CdxSwapper.Sessions.Tests -c Release -- --ui
+dotnet run --project tests/CtxDeck.Sessions.Tests -c Release
+dotnet run --project tests/CtxDeck.Sessions.Tests -c Release -- --ui
 ```
 
 The `--ui` check opens a real WebView2 window with temporary journals/databases, verifies all four clients (including both Antigravity sources), the interface/API/clipboard, live search invalidation and captures `sessions-ui.png` beside the test executable. Add `--culture=ru-RU` or `--culture=es-MX` to check localization; unsupported cultures fall back to English. `--native` verifies a generated Codex session through the installed Codex app-server without running model inference. `--native-hermes` verifies schema initialization and native export of C# imported history through the installed Hermes CLI, also without inference. `--native-antigravity-app` verifies import, the actual application's selected chat URL, visible user/assistant messages and expanded tool arguments/output. `--native-antigravity` verifies IDE import and focus. These Antigravity checks create local test conversations without model inference. `--hermes-live` and `--antigravity-live` perform read-only scans and print counts from real stores.
 
 ## Python CLI
 
-The companion `cdx_swap.py` supports account listing, usage checks, continuous synchronization, and switching from a terminal.
+The companion `ctxdeck.py` supports account listing, usage checks, continuous synchronization, and switching from a terminal.
 
 Install dependencies for usage requests and process management:
 
@@ -103,15 +103,15 @@ python -m pip install requests psutil
 If installed, `curl_cffi` is preferred over `requests` for usage requests.
 
 ```powershell
-python cdx_swap.py list
-python cdx_swap.py status --json
-python cdx_swap.py sync
-python cdx_swap.py watch --interval 30 --usage-interval 300
-python cdx_swap.py swap <name>
-python cdx_swap.py swap --best
+python ctxdeck.py list
+python ctxdeck.py status --json
+python ctxdeck.py sync
+python ctxdeck.py watch --interval 30 --usage-interval 300
+python ctxdeck.py swap <name>
+python ctxdeck.py swap --best
 ```
 
-Use `--store <directory>` or `CDX_STORE` to override the account directory. By default, the CLI uses the same sibling `cdxSwapper` directory as the tray application. Account matching uses `tokens.account_id`.
+Use `--store <directory>` or `CTXDECK_STORE` to override the CLI account directory (`CDX_STORE` remains supported). By default, the CLI uses the same store selection as the tray application, including the legacy-directory fallback. Account matching uses `tokens.account_id`.
 
 Switch options include `--process`, `--exe`, `--no-kill`, `--no-restart`, and `--force`. The watcher preserves newer saved credentials rather than overwriting them with an older `last_refresh` value. Switching saves the current account and backs up the active file before replacement.
 

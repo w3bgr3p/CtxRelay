@@ -1,6 +1,6 @@
-"""Промо-ролик CdxSwapper, 20 c. Кадры рисуются PIL (суперсэмплинг x2), кодирует ffmpeg.
+"""Промо-ролик CtxDeck, 20 c. Кадры рисуются PIL (суперсэмплинг x2), кодирует ffmpeg.
 
-python make_promo.py --track <m4a> --out CdxSwapper_promo.mp4
+python make_promo.py --track <m4a> --out CtxDeck_promo.mp4
 Клип берётся из трека так, чтобы дроп (53.96 c) пришёлся на 7-ю долю (4.667 c) ролика.
 """
 import argparse
@@ -355,13 +355,13 @@ def render(i):
     fade_out = 1 - prog(t, T_MOVE1, 0.4)
     if DROP <= t < T_MOVE1 + 0.4:
         sc = 1 + 0.25 * (1 - out_cubic(prog(t, DROP, 0.35)))
-        text(d, (640, 470), "CdxSwapper", "segoeuib", 84 * sc, TEXT, prog(t, DROP, 0.12) * fade_out, "mm")
+        text(d, (640, 470), "CtxDeck", "segoeuib", 84 * sc, TEXT, prog(t, DROP, 0.12) * fade_out, "mm")
         text(d, (640, 545), "Лимиты Codex и смена аккаунта — из трея", "segoeui", 28, DIM, prog(t, DROP + 0.4, 0.4) * fade_out, "mm")
     if t >= T_END:
         sc = 1 + 0.2 * (1 - out_cubic(prog(t, T_END + 0.5, 0.4)))
-        text(d, (640, 470), "CdxSwapper", "segoeuib", 84 * sc, TEXT, prog(t, T_END + 0.5, 0.3), "mm")
+        text(d, (640, 470), "CtxDeck", "segoeuib", 84 * sc, TEXT, prog(t, T_END + 0.5, 0.3), "mm")
         text(d, (640, 545), "Один клик — другой аккаунт.", "segoeui", 28, DIM, prog(t, T_END + 0.9, 0.4), "mm")
-    text(d, (112, 50), "CdxSwapper", "segoeuib", 26, TEXT, prog(t, 7.8, 0.4) * (1 - prog(t, T_END, 0.3)), "lm")
+    text(d, (112, 50), "CtxDeck", "segoeuib", 26, TEXT, prog(t, 7.8, 0.4) * (1 - prog(t, T_END, 0.3)), "lm")
 
     # --- подписи под иконкой
     caption(d, t, ["Остаток лимита — прямо в иконке"], 7.6, 10.67)
