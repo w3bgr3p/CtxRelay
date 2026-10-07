@@ -6,7 +6,8 @@
 
 <p align="center">
   One library for your Codex, Claude, Hermes and Gemini (Antigravity) sessions —<br>
-  search them, read them, and continue any conversation in another client.
+  search them, read them, and continue any conversation in another client.<br><br>
+  <a href="https://ctxrelay.z3n.pro">ctxrelay.z3n.pro</a> · <a href="../../releases/latest">Download</a>
 </p>
 
 ---
