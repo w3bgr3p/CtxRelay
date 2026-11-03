@@ -1,0 +1,72 @@
+# Опубликован релиз → пересобрать z3n.pro, чтобы он сразу появился на сайте.
+# workflow_dispatch — ручной запуск для проверки (Actions → notify-site → Run workflow).
+name: notify-site
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (empty = latest published release)'
+        type: string
+        required: false
+      telegram_mode:
+        description: 'Telegram destination for this manual run'
+        type: choice
+        options: [test, prod]
+        default: test
+      preview_only:
+        description: 'Prepare preview without sending to Telegram'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  deploy-hook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger z3n.pro rebuild
+        env:
+          HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "секрет VERCEL_DEPLOY_HOOK не задан"; exit 1; fi
+          curl -fsS -X POST --max-time 30 "$HOOK"
+  telegram:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: telegram-release-${{ github.event.release.tag_name || inputs.release_tag || 'latest' }}-${{ inputs.telegram_mode || vars.TELEGRAM_MODE || 'prod' }}
+      cancel-in-progress: false
+    env:
+      TELEGRAM_MODE: ${{ inputs.telegram_mode || vars.TELEGRAM_MODE || 'prod' }}
+      TELEGRAM_TEST_CHAT_ID: ${{ vars.TELEGRAM_TEST_CHAT_ID }}
+      TELEGRAM_TEST_TOPIC_ID: ${{ vars.TELEGRAM_TEST_TOPIC_ID }}
+      TELEGRAM_PROD_CHAT_ID: ${{ vars.TELEGRAM_PROD_CHAT_ID }}
+      TELEGRAM_PROD_TOPIC_ID: ${{ vars.TELEGRAM_PROD_TOPIC_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Release tags may predate the notification script.
+          ref: ${{ github.event_name == 'release' && github.event.repository.default_branch || github.ref }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test Telegram formatter
+        run: node --test .github/scripts/telegram-release.test.mjs
+      - name: Prepare release preview
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: node .github/scripts/telegram-release.mjs
+      - name: Save preview and Telegram payload
+        uses: actions/upload-artifact@v4
+        with:
+          name: telegram-release-${{ env.TELEGRAM_MODE }}
+          path: artifacts/telegram-release/
+          retention-days: 14
+      - name: Send to selected Telegram topic
+        if: inputs.preview_only != true
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        run: node .github/scripts/telegram-release.mjs --send
