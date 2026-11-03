@@ -28,6 +28,8 @@ sealed class TrayApp : ApplicationContext
     DateTime _usageAt = DateTime.MinValue;
     string? _activeName;
     bool _refreshing, _swapping;
+    CancellationTokenSource? _loginCancellation;
+    bool _exiting;
     IntPtr _iconHandle;
     SessionWindow? _window;
 
@@ -205,6 +207,7 @@ sealed class TrayApp : ApplicationContext
         m.SuspendLayout();
         foreach (ToolStripItem old in m.Items) old.Image?.Dispose();
         m.Items.Clear();
+        m.Items.Add(new ToolStripMenuItem(Sessions.SessionText.Pick("Applications…","Приложения…","Aplicaciones…"),null,(_,_)=> { ShowMainWindow();_window?.ShowApplications(); }));
         var accounts = _store.Accounts();
 
         // шапка: активный аккаунт и его остаток
@@ -248,6 +251,15 @@ sealed class TrayApp : ApplicationContext
         }
 
         m.Items.Add(ModernMenu.Separator());
+        var addAccount = ModernMenu.Item(m, Text(_loginCancellation == null ? Message.AddAccount : Message.CancelLogin), null,
+            ModernMenu.Glyph(m, ModernMenu.GlyphStartup), (_, _) =>
+            {
+                if (_loginCancellation != null) _loginCancellation.Cancel();
+                else _ = AddAccount();
+            });
+        addAccount.Enabled = !_swapping;
+        m.Items.Add(addAccount);
+        if (_loginCancellation != null) m.Items.Add(ModernMenu.Caption(m, Text(Message.LoginPending)));
         m.Items.Add(ModernMenu.Item(m, Text(Message.RefreshLimits), null, ModernMenu.Glyph(m, ModernMenu.GlyphRefresh), (_, _) => _ = RefreshUsage()));
         m.Items.Add(ModernMenu.Item(m, Text(Message.OpenFolder), null, ModernMenu.Glyph(m, ModernMenu.GlyphFolder),
             (_, _) => Process.Start(new ProcessStartInfo(_store.Root) { UseShellExecute = true })?.Dispose()));
@@ -278,6 +290,42 @@ sealed class TrayApp : ApplicationContext
     }
 
     // ------------------------------------------------------------ действия
+
+    async Task AddAccount()
+    {
+        if (_loginCancellation != null || _swapping) return;
+        using var cancellation = new CancellationTokenSource();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellation.Token, timeout.Token);
+        _loginCancellation = cancellation;
+        _tray.ShowBalloonTip(5000, "CtxRelay", Text(Message.LoginPending), ToolTipIcon.Info);
+        try
+        {
+            var result = await new AccountLogin(_store).AddAsync(linked.Token);
+            if (!_exiting)
+                _tray.ShowBalloonTip(5000, "CtxRelay", Text(result.Added ? Message.LoginAdded : Message.LoginExists, result.Name), ToolTipIcon.Info);
+        }
+        catch (OperationCanceledException)
+        {
+            if (!_exiting && timeout.IsCancellationRequested && !cancellation.IsCancellationRequested)
+                MessageBox.Show(Text(Message.LoginTimedOut), "CtxRelay", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        catch (Exception e)
+        {
+            Log.Write("[warn] " + Log.Error("add_account", e));
+            if (!_exiting) MessageBox.Show(e.Message, "CtxRelay", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+        finally
+        {
+            _loginCancellation = null;
+            if (!_exiting)
+            {
+                SyncTick();
+                _ = RefreshUsage();
+                if (_menu.Visible) BuildMenu();
+            }
+        }
+    }
 
     async Task DoSwap(string name)
     {
@@ -337,6 +385,8 @@ sealed class TrayApp : ApplicationContext
 
     protected override void ExitThreadCore()
     {
+        _exiting = true;
+        _loginCancellation?.Cancel();
         _window?.Shutdown();
         _syncTimer.Stop();
         _usageTimer.Stop();

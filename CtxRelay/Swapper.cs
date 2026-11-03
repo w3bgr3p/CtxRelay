@@ -6,12 +6,29 @@ namespace CtxRelay;
 static class Swapper
 {
     public const string ProcessName = "ChatGPT";
+    static Process[] DesktopProcesses()
+    {
+        var desktop=new List<Process>();
+        foreach(var process in Process.GetProcessesByName(ProcessName).Concat(Process.GetProcessesByName("Codex")))
+        {
+            try
+            {
+                var exe=process.MainModule?.FileName;
+                if(exe!=null && DesktopApps.AppLauncher.Payload("codex",Path.GetDirectoryName(exe)!)==exe)
+                {desktop.Add(process);continue;}
+            }
+            catch(System.ComponentModel.Win32Exception) { }
+            catch(InvalidOperationException) { }
+            process.Dispose();
+        }
+        return desktop.ToArray();
+    }
 
     public static string? FindExe()
     {
-        foreach (var p in Process.GetProcessesByName(ProcessName))
+        foreach (var p in Process.GetProcessesByName(ProcessName).Concat(Process.GetProcessesByName("Codex")))
         {
-            try { var f = p.MainModule?.FileName; if (!string.IsNullOrEmpty(f)) return f; }
+            try { var f = p.MainModule?.FileName; if (!string.IsNullOrEmpty(f) && DesktopApps.AppLauncher.Payload("codex",Path.GetDirectoryName(f)!)==f) return f; }
             catch { }
             finally { p.Dispose(); }
         }
@@ -20,14 +37,17 @@ static class Swapper
 
     static int CountAlive()
     {
-        var ps = Process.GetProcessesByName(ProcessName);
+        var ps = DesktopProcesses();
         foreach (var p in ps) p.Dispose();
         return ps.Length;
     }
 
     static void KillTree()
     {
-        var psi = new ProcessStartInfo("taskkill", $"/F /T /IM {ProcessName}.exe")
+        var desktop=DesktopProcesses();
+        if(desktop.Length==0)return;
+        var ids=desktop.Select(p=>p.Id).ToArray();foreach(var process in desktop)process.Dispose();
+        var psi = new ProcessStartInfo("taskkill", "/F /T "+string.Join(" ",ids.Select(id=>"/PID "+id)))
         { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
         using (var p = Process.Start(psi)!)
         {
@@ -46,7 +66,7 @@ static class Swapper
 
     static void Start(string exe)
     {
-        Process.Start(new ProcessStartInfo(exe) { UseShellExecute = true, WorkingDirectory = Path.GetDirectoryName(exe)! })?.Dispose();
+        DesktopApps.AppLauncher.Launch("codex",fallback:exe);
         Log.Write($"[start] {exe}");
     }
 

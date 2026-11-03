@@ -45,15 +45,7 @@ static class DesktopClients
         {
             claudeRequests[item.Id] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             claudeLogOffsets[item.Id] = File.Exists(ClaudeLog) ? new FileInfo(ClaudeLog).Length : 0;
-            var alias = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "Microsoft", "WindowsApps", "claude-desktop.exe");
-            if (File.Exists(alias))
-            {
-                // The MSIX execution alias forwards arguments to the running Desktop instance.
-                // Shell activation of the protected executable can discard the session URL.
-                var desktop = new ProcessStartInfo(alias) { UseShellExecute = false, CreateNoWindow = true };
-                desktop.ArgumentList.Add(url); Process.Start(desktop)?.Dispose(); return;
-            }
+            DesktopApps.AppLauncher.Launch("claude",url);return;
         }
         if (item.Provider == "hermes") InstallHermesBridge(item);
         var start = new ProcessStartInfo(executable.Length == 0 ? url : executable) { UseShellExecute = true };

@@ -10,7 +10,9 @@ enum Message
     LimitWarning, ActiveAccount, SwapFailed, WindowRemaining, TokenExpired,
     MissingRateLimit, KillTimeout, ProcessStillRunning, AccountNotFound,
     EmptyJson, MissingAccountId, RefreshUnavailable, RefreshSignIn,
-    RefreshFailed, InvalidRefreshResponse, RefreshAccountChanged
+    RefreshFailed, InvalidRefreshResponse, RefreshAccountChanged,
+    AddAccount, CancelLogin, LoginPending, LoginAdded, LoginExists, LoginFailed,
+    LoginInvalid, LoginCliMissing, LoginTimedOut
 }
 
 static class Localization
@@ -34,6 +36,15 @@ static class Localization
 
     static readonly Dictionary<Message, (string En, string Ru, string Es)> Strings = new()
     {
+        [Message.AddAccount] = ("Add account…", "Добавить аккаунт…", "Añadir cuenta…"),
+        [Message.CancelLogin] = ("Cancel sign-in", "Отменить вход", "Cancelar inicio de sesión"),
+        [Message.LoginPending] = ("Complete sign-in in your browser", "Завершите вход в браузере", "Completa el inicio de sesión en el navegador"),
+        [Message.LoginAdded] = ("Account added: {0}. Select it in the tray menu to switch.", "Аккаунт добавлен: {0}. Для переключения выберите его в меню трея.", "Cuenta añadida: {0}. Selecciónala en el menú de la bandeja para cambiar."),
+        [Message.LoginExists] = ("Account {0} is already saved. To add another, choose a different account in your browser.", "Аккаунт {0} уже сохранён. Чтобы добавить другой, выберите другой аккаунт в браузере.", "La cuenta {0} ya está guardada. Para añadir otra, elige otra cuenta en el navegador."),
+        [Message.LoginFailed] = ("Browser sign-in failed (exit code {0}). Try adding the account again.", "Вход через браузер не завершён (код {0}). Попробуйте добавить аккаунт снова.", "El inicio de sesión falló (código {0}). Intenta añadir la cuenta de nuevo."),
+        [Message.LoginInvalid] = ("Sign-in returned incomplete credentials. Try again.", "Вход вернул неполную авторизацию. Повторите попытку.", "El inicio de sesión devolvió credenciales incompletas. Inténtalo de nuevo."),
+        [Message.LoginCliMissing] = ("Codex CLI was not found. Start Codex Desktop or install Codex CLI, then try again.", "Codex CLI не найден. Запустите Codex Desktop или установите Codex CLI и повторите попытку.", "No se encontró Codex CLI. Abre Codex Desktop o instala Codex CLI e inténtalo de nuevo."),
+        [Message.LoginTimedOut] = ("Sign-in timed out after 5 minutes. Try adding the account again.", "Время ожидания входа истекло (5 минут). Попробуйте добавить аккаунт снова.", "Se agotó el tiempo de inicio de sesión (5 minutos). Intenta añadir la cuenta de nuevo."),
         [Message.FileAuthEnabled] = ("File-based authentication enabled in config.toml. Restart Codex.", "В config.toml включено хранение авторизации в файле. Перезапустите Codex.", "Se activó la autenticación mediante archivos en config.toml. Reinicia Codex."),
         [Message.NoAuth] = ("no auth.json", "нет auth.json", "sin auth.json"),
         [Message.UsageError] = ("failed to fetch usage limits", "ошибка запроса лимитов", "error al consultar los límites"),

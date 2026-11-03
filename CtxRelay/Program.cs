@@ -16,6 +16,13 @@ static class Program
             return 2;
         }
         Log.FilePath = Path.Combine(store.Root, "CtxRelay.log");
+        DesktopApps.AppLauncher.Initialize(store.Root);
+        var launchIndex=Array.IndexOf(args,"--launch-app");
+        if(launchIndex>=0)
+        {
+            try { DesktopApps.AppLauncher.Launch(DesktopApps.AppProviders.Check(args.ElementAtOrDefault(launchIndex+1)??""));return 0; }
+            catch(Exception e) { MessageBox.Show(e.Message,"CtxRelay",MessageBoxButtons.OK,MessageBoxIcon.Error);return 1; }
+        }
 
         // --check: sync + лимиты в <store>\check.txt, без трея. Для проверки без UI.
         if (args.Contains("--check")) return Check(store);

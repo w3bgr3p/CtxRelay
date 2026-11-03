@@ -1,0 +1,461 @@
+﻿/* Current z3n palettes scoped to the application manager. */
+html[data-theme=graphite] .apps-view,html[data-theme=dark] .apps-view {
+    color-scheme: dark;
+
+    /* ── Поверхности и текст: монохром ── */
+    --bg:           #020303;
+    --bg1:          #0c0d0e;
+    --bg2:          #101214;
+    --bg3:          #171b1e;
+    --border:       #333637;
+    --muted:        #6c7275;
+    --muted2:       #8a9093;
+    --text3:        #82898c;
+    --text2:        #a5a9ac;
+    /* Спецификация graphite даёт #f3f5f6, но там это 14px на просторных
+       панелях. На плотной строке такой светлый текст расплывается и
+       читается жирным: замерено 234 против 204 у hyper при том же шрифте
+       и том же весе. Приведено к уровню остальных тем. */
+    --text:         #c9cccd;
+    --text-hi:     #f7fbff;
+
+    /* ── Акцент: тоже монохром. Это хрома, не состояние. ── */
+    --accent:      #dfe1e2;
+    --accent-lo:   #f7fbff;
+    --blue-border: #45484a;
+    --blue-tint:   #181a1b;
+
+    /* ── Состояния: цвет сохранён ── */
+    --green:       #74be7e;
+    --green-lo:    #93cc9b;
+    --green-hi:    #97ce9e;
+    --green-bg:    #326739;
+    --green-bg2:   #408249;
+    --green-tint:  #172719;
+
+    --red:         #d87d79;
+    --red-lo:      #e2a09c;
+    --red-bg:      #8c3b36;
+    --red-bg2:     #6e2e2b;
+    --red-tint:    #271717;
+    --red-tint2:   #1d1211;
+
+    --yellow:      #c6a96c;
+    --yellow-lo:   #d3bd8d;
+    --yellow-tint: #272217;
+
+    --purple:      #89a5bd;
+    --purple-tint: #171f27;
+
+    --font: var(--mono);
+    --font-size: 12px;
+    --radius:      10px;
+    --radius-sm:   6px;
+    --radius-lg:   14px;
+
+    --surface:    var(--bg1);
+    --surface2:   var(--bg2);
+    --surface3:   var(--bg3);
+    --border2:    #414648;
+    --text-dim:   var(--text2);
+    --text-muted: var(--muted);
+    --accent-dim: var(--blue-tint);
+    --green-dim:  var(--green-tint);
+    --yellow-dim: var(--yellow-tint);
+    --red-dim:    var(--red-tint);
+    --purple-dim: var(--purple-tint);
+
+    /* Подсветка синтаксиса кодирует вид значения — цвет остаётся. */
+    --key-color:    #89a5bd;
+    --string-color: #74be7e;
+    --number-color: #c6a96c;
+    --bool-color:   #d095b6;
+    --null-color:   #9595d0;
+
+    --row-h: 19px;
+
+    --steel:         #89a5bd;
+    --steel-tint:    #171f27;
+    --steel-tint-border: #27343f;
+    --cyan:          #7ab8b5;
+    --cyan-tint:     #172726;
+    --cyan-tint-border: #273f3e;
+    --gold:          #c7bb75;
+    --gold-tint:     #272417;
+    --gold-tint-border: #3f3c27;
+    --indigo:        #9595d0;
+    --indigo-tint:   #171727;
+    --indigo-tint-border: #27273f;
+    --pink:          #d095b6;
+    --pink-tint:     #271720;
+    --pink-tint-border: #3f2735;
+
+    --on-accent:   #020303;
+    --on-solid:    #f7fbff;
+
+    --blue-tint-border:   #2c2f30;
+    --red-tint-border:    #3f2827;
+    --yellow-tint-border: #3f3727;
+    --green-tint-border:  #273f2a;
+    --purple-tint-border: #27343f;
+
+    /* ── Материалы: см. блок «GRAPHITE — материалы» ниже ── */
+    --gr-highlight:  rgba(236, 243, 247, 0.065);
+    --gr-highlight2: rgba(236, 243, 247, 0.12);
+    --gr-edge:       rgba(255, 255, 255, 0.085);
+    --gr-shade:      rgba(0, 0, 0, 0.26);
+    --gr-drop:       rgba(0, 0, 0, 0.38);
+    --gr-halo:       rgba(225, 239, 248, 0.07);
+    --gr-ctl-top:    #2c3236;
+    --gr-ctl-bottom: #171c1f;
+    --gr-ctl-hi-top: #353d42;
+    --gr-ctl-hi-bot: #20272b;
+    --gr-head:       linear-gradient(115deg, #191b1c, #0d0e0f 62%, #080909);
+    --gr-modal-drop: rgba(0, 0, 0, 0.6);
+    --gr-input-edge: rgba(231, 239, 244, 0.09);
+}
+
+/* ═══════════════════════════════════════════════════════
+   ALUMINIUM — светлая пара к graphite.
+   Та же логика, вывернутая наизнанку: алюминиевые поверхности,
+   монохромная хрома (акцент — почти чёрный), цвет только у
+   состояний. Материалы те же: свет сверху-слева, выпуклые
+   кнопки, утопленные поля — только тени лёгкие, а блик белый.
+   Плотность, шрифт и радиусы — общие с graphite (блок ниже).
+   ═══════════════════════════════════════════════════════ */
+html[data-theme=graphite-light],html[data-theme=graphite-light] .apps-view,html[data-theme=light] .apps-view {
+    color-scheme: light;
+
+    /* ── Поверхности: страница темнее панелей, панели светлее к верху ── */
+    --bg:           #dcdfe1;
+    --bg1:          #e9ebec;
+    --bg2:          #f1f2f3;
+    --bg3:          #f8f9f9;
+    --border:       #bfc3c6;
+    --muted:        #969c9f;
+    --muted2:       #7e8487;
+    --text3:        #686e72;
+    --text2:        #50565a;
+    --text:         #25292b;
+    --text-hi:      #0a0c0d;
+
+    /* ── Акцент: монохром ── */
+    --accent:      #2a2e30;
+    --accent-lo:   #0a0c0d;
+    --blue-border: #a9aeb1;
+    --blue-tint:   #dfe2e4;
+
+    /* ── Состояния: приглушённые, но читаемые на светлом ── */
+    --green:       #2f7a3a;
+    --green-lo:    #24622d;
+    --green-hi:    #2f7a3a;
+    --green-bg:    #3b7f45;
+    --green-bg2:   #33703c;
+    --green-tint:  #dcebde;
+
+    --red:         #a8433e;
+    --red-lo:      #8a3531;
+    --red-bg:      #a8473f;
+    --red-bg2:     #923d37;
+    --red-tint:    #f1dfde;
+    --red-tint2:   #f5e8e7;
+
+    --yellow:      #85661f;
+    --yellow-lo:   #6e5419;
+    --yellow-tint: #efe8d6;
+
+    --purple:      #4b6680;
+    --purple-tint: #dfe6ec;
+
+    --surface:    var(--bg1);
+    --surface2:   var(--bg2);
+    --surface3:   var(--bg3);
+    --border2:    #aeb3b6;
+    --text-dim:   var(--text2);
+    --text-muted: var(--muted);
+    --accent-dim: var(--blue-tint);
+    --green-dim:  var(--green-tint);
+    --yellow-dim: var(--yellow-tint);
+    --red-dim:    var(--red-tint);
+    --purple-dim: var(--purple-tint);
+
+    --key-color:    #4b6680;
+    --string-color: #2f7a3a;
+    --number-color: #85661f;
+    --bool-color:   #8f4d6c;
+    --null-color:   #5a5a96;
+
+    --row-h: 19px;
+
+    --steel:         #4b6680;
+    --steel-tint:    #dfe6ec;
+    --steel-tint-border: #bfccd8;
+    --cyan:          #2c706c;
+    --cyan-tint:     #dbeae9;
+    --cyan-tint-border: #b3d3d1;
+    --gold:          #75681f;
+    --gold-tint:     #ece8d5;
+    --gold-tint-border: #d4cca2;
+    --indigo:        #5a5a96;
+    --indigo-tint:   #e3e3ef;
+    --indigo-tint-border: #c4c4dc;
+    --pink:          #8f4d6c;
+    --pink-tint:     #efe0e7;
+    --pink-tint-border: #d9bccb;
+
+    --on-accent:   #f8f9f9;
+    --on-solid:    #ffffff;
+
+    --blue-tint-border:   #c9cdd0;
+    --red-tint-border:    #e0bfbd;
+    --yellow-tint-border: #d9cca8;
+    --green-tint-border:  #bad4be;
+    --purple-tint-border: #bfccd8;
+
+    /* ── Материалы ── */
+    --gr-highlight:  rgba(255, 255, 255, 0.55);
+    --gr-highlight2: rgba(255, 255, 255, 0.85);
+    --gr-edge:       rgba(255, 255, 255, 0.9);
+    --gr-shade:      rgba(30, 40, 48, 0.05);
+    --gr-drop:       rgba(30, 40, 48, 0.12);
+    --gr-halo:       rgba(30, 40, 48, 0.14);
+    --gr-ctl-top:    #fdfdfd;
+    --gr-ctl-bottom: #dfe2e4;
+    --gr-ctl-hi-top: #ffffff;
+    --gr-ctl-hi-bot: #e9ebed;
+    --gr-head:       linear-gradient(115deg, #fafbfb, #eceef0 62%, #e3e6e8);
+    --gr-modal-drop: rgba(30, 40, 48, 0.25);
+    --gr-input-edge: rgba(30, 40, 48, 0.07);
+}
+
+/* ── Плотность graphite и aluminium: просторнее общей шкалы примерно
+   в 1.4 раза. Переобъявляются только изменяемые ступени — остальные
+   берутся из :root. Отдельным блоком, а не в :root-блоке graphite:
+   иначе эти ступени достались бы и hyper. ── */
+html[data-theme=hyper] .apps-view,html[data-theme=hyper] .apps-view {
+    color-scheme: dark;
+
+    --bg:          #000000;
+    --bg1:         #0a0a0a;
+    --bg2:         #111111;
+    --bg3:         #1a1a1a;
+    --border:      #2a2a2a;
+    --muted:       #333333;
+    --muted2:      #444444;
+    --text3:       #555555;
+    --text2:       #888888;
+    --text:        #cccccc;
+    --text-hi:     #eeeeee;
+
+    --accent:      #00ff41;
+    --accent-lo:   #00cc33;
+    --blue-border: #0affef;
+    --blue-tint:   #001a1a;
+
+    --green:       #00ff41;
+    --green-lo:    #00cc33;
+    --green-hi:    #39ff14;
+    --green-bg:    #003300;
+    --green-bg2:   #004400;
+    --green-tint:  #001100;
+
+    --red:         #ff3333;
+    --red-lo:      #ff6666;
+    --red-bg:      #550000;
+    --red-bg2:     #440000;
+    --red-tint:    #1a0000;
+    --red-tint2:   #110000;
+
+    --yellow:      #f5d800;
+    --yellow-lo:   #ff9900;
+    --yellow-tint: #1a1400;
+
+    --purple:      #bd93f9;
+    --purple-tint: #0f0a1a;
+
+    --font: 'JetBrains Mono', monospace;
+    --font-size: 11px;
+    --radius: 0px;
+    --radius-sm:   0px;
+
+    --surface:    var(--bg1);
+    --surface2:   var(--bg2);
+    --surface3:   var(--bg3);
+    --border2:    #3a3a3a;
+    --text-dim:   var(--text2);
+    --text-muted: var(--muted);
+    --accent-dim: var(--blue-tint);
+    --green-dim:  var(--green-tint);
+    --yellow-dim: var(--yellow-tint);
+    --red-dim:    var(--red-tint);
+    --purple-dim: var(--purple-tint);
+
+    --key-color:    #00ff41;
+    --string-color: #00cc33;
+    --number-color: #f5d800;
+    --bool-color:   #ff6b9d;
+    --null-color:   #bd93f9;
+
+    --radius-lg: 0px;
+    --row-h: 19px;
+
+    /* Текст на залитой подложке */
+    /* Матовый синий (тон BMW, H=208), пришёл на смену фиолетовому */
+    /* Бирюза: статус Schedule. Разведена с --steel по тону (177 против 208). */
+    /* Золото: денежные суммы в treasury. */
+    /* Индиго и розовый: категории бейджей безопасности в json. */
+    --indigo:             #7070ff;
+    --indigo-tint:        #08082b;
+    --indigo-tint-border: #0d0d4a;
+    --pink:             #ff70c1;
+    --pink-tint:        #2b081c;
+    --pink-tint-border: #4a0d2f;
+
+    --gold:              #ffd700;
+    --gold-tint:         #2b2608;
+    --gold-tint-border:  #4a410d;
+
+    --cyan:             #0affef;
+    --cyan-tint:        #082b2a;
+    --cyan-tint-border: #0d4a47;
+
+    --steel:             #5aa3e2;
+    --steel-tint:        #081b2b;
+    --steel-tint-border: #0d2d4a;
+
+    --on-accent:   #000000;
+    --on-solid:    #ffffff;
+
+    /* Рамка к --*-tint. Тинт + ~7% светлоты, тот же тон. */
+    --blue-tint-border: #003e3e;
+    --red-tint-border: #3e0000;
+    --yellow-tint-border: #3e2f00;
+    --green-tint-border: #003500;
+    --purple-tint-border: #1e1434;
+
+    /* ── Hyper-эффекты (блок в конце файла) ── */
+    --hy-scan:  rgba(0, 0, 0, 0.04);
+    --hy-glow:  #00ff41;
+    --hy-tint:  rgba(0, 255, 65, 0.04);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PAPER — светлая пара к hyper.
+   Терминал, распечатанный на принтере: чистый белый лист,
+   чёрный текст, моноширинный шрифт, нулевые радиусы,
+   прописные заголовки с разрядкой, плашки только контуром.
+   Неоновое свечение на белом даёт грязь — вместо него
+   жёсткая смещённая тень, как у печати со сдвигом.
+   Зелёный затемнён до читаемого на белом.
+   ═══════════════════════════════════════════════════════ */
+html[data-theme=hyper-light],html[data-theme=hyper-light] .apps-view {
+    color-scheme: light;
+
+    --bg:          #ffffff;
+    --bg1:         #f7f7f7;
+    --bg2:         #efefef;
+    --bg3:         #e6e6e6;
+    --border:      #cfcfcf;
+    --muted:       #b5b5b5;
+    --muted2:      #9a9a9a;
+    --text3:       #767676;
+    --text2:       #4f4f4f;
+    --text:        #1c1c1c;
+    --text-hi:     #000000;
+
+    --accent:      #008a2e;
+    --accent-lo:   #006b24;
+    --blue-border: #00807a;
+    --blue-tint:   #e3f7f5;
+
+    --green:       #008a2e;
+    --green-lo:    #006b24;
+    --green-hi:    #00a336;
+    --green-bg:    #c9f2d4;
+    --green-bg2:   #a9e9ba;
+    --green-tint:  #ebfaef;
+
+    --red:         #d10000;
+    --red-lo:      #a30000;
+    --red-bg:      #ffd4d4;
+    --red-bg2:     #ffbdbd;
+    --red-tint:    #ffeded;
+    --red-tint2:   #fff5f5;
+
+    --yellow:      #8c6c00;
+    --yellow-lo:   #b35900;
+    --yellow-tint: #fff8d9;
+
+    --purple:      #7a3fd1;
+    --purple-tint: #f4edff;
+
+    --font: 'JetBrains Mono', monospace;
+    --font-size: 11px;
+    --radius: 0px;
+    --radius-sm:   0px;
+
+    --surface:    var(--bg1);
+    --surface2:   var(--bg2);
+    --surface3:   var(--bg3);
+    --border2:    #bdbdbd;
+    --text-dim:   var(--text2);
+    --text-muted: var(--muted);
+    --accent-dim: var(--blue-tint);
+    --green-dim:  var(--green-tint);
+    --yellow-dim: var(--yellow-tint);
+    --red-dim:    var(--red-tint);
+    --purple-dim: var(--purple-tint);
+
+    --key-color:    #008a2e;
+    --string-color: #006b24;
+    --number-color: #8c6c00;
+    --bool-color:   #c4006a;
+    --null-color:   #7a3fd1;
+
+    --radius-lg: 0px;
+    --row-h: 19px;
+
+    --indigo:             #3a3ad1;
+    --indigo-tint:        #ededff;
+    --indigo-tint-border: #c9c9f5;
+    --pink:             #c4006a;
+    --pink-tint:        #ffe8f4;
+    --pink-tint-border: #f5bcdb;
+
+    --gold:              #8c7300;
+    --gold-tint:         #fff8d9;
+    --gold-tint-border:  #eadc96;
+
+    --cyan:             #00807a;
+    --cyan-tint:        #e3f7f5;
+    --cyan-tint-border: #9fe3de;
+
+    --steel:             #1f68a6;
+    --steel-tint:        #e5f0fa;
+    --steel-tint-border: #b2d0ea;
+
+    --on-accent:   #ffffff;
+    --on-solid:    #000000;
+
+    --blue-tint-border:   #9fe3de;
+    --red-tint-border:    #f5b3b3;
+    --yellow-tint-border: #eadc96;
+    --green-tint-border:  #a9e6b8;
+    --purple-tint-border: #d7c4f5;
+
+    /* ── Hyper-эффекты (блок ниже): свечения на белом нет ── */
+    --hy-scan:  rgba(0, 0, 0, 0.022);
+    --hy-glow:  transparent;
+    --hy-tint:  rgba(0, 138, 46, 0.06);
+}
+
+
+/* ═══════════════════════════════════════════════════════
+   GRAPHITE / ALUMINIUM — материалы.
+   Токенами не выражаются: это градиенты и тени, а не значения.
+   Размеры теней уменьшены против оригинала graphite — там они
+   рассчитаны на панели дашборда, а здесь строка высотой 24px.
+   Цвета теней и бликов — в --gr-* у каждой из двух тем.
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Панель: свет сверху-слева, притенение снизу, тень наружу ── */

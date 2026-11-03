@@ -80,10 +80,7 @@ static class SessionActions
         {
             if (UsesCodexDesktop(item) && !item.Subagent)
             {
-                var executable = CodexDesktopExecutable(); var url = CodexDesktopUrl(item);
-                var startDesktop = new ProcessStartInfo(executable.Length == 0 ? url : executable) { UseShellExecute = true };
-                if (executable.Length > 0) startDesktop.ArgumentList.Add(url);
-                Process.Start(startDesktop)?.Dispose(); return;
+                DesktopApps.AppLauncher.Launch("codex",CodexDesktopUrl(item),CodexDesktopExecutable());return;
             }
             if (item.Subagent) throw new InvalidOperationException(SessionText.Pick("Resume the parent session for this subagent.",
                 "Продолжайте родительскую сессию для этого субагента.", "Continúa la sesión principal de este subagente."));

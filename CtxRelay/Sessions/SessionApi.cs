@@ -9,6 +9,7 @@ sealed class SessionApi : IDisposable
     readonly SessionConverter converter;
     readonly string hermesHome;
     readonly string dataRoot;
+    readonly DesktopApps.AppManager apps=new(DesktopApps.AppLauncher.DataRoot);
     public SessionApi(string codexHome, string claudeHome, string dataRoot, string? hermesHome = null, string? antigravityRoot = null)
     {
         this.hermesHome = hermesHome ?? HermesStore.DefaultHome;
@@ -19,6 +20,7 @@ sealed class SessionApi : IDisposable
     }
     public async Task<object> RequestAsync(string method, Uri url, string body)
     {
+        if(url.AbsolutePath=="/api/apps")return await apps.RequestAsync(method,body);
         var query = url.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries)
             .Select(p => p.Split('=', 2)).ToDictionary(p => Uri.UnescapeDataString(p[0]),
                 p => p.Length > 1 ? Uri.UnescapeDataString(p[1].Replace('+', ' ')) : "");

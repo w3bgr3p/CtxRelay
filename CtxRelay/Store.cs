@@ -58,17 +58,35 @@ sealed class Store
 
     public AuthFile? Active() => AuthFile.TryLoad(ActivePath);
 
+    public (string Name, bool Added) ImportAccount(AuthFile auth)
+    {
+        lock (AuthGate)
+        {
+            SyncActiveCore();
+            var accounts = Accounts();
+            foreach (var (existing, saved) in accounts)
+                if (saved.AccountId == auth.AccountId) return (existing, false);
+            var name = NameFor(auth, accounts);
+            AtomicWrite(PathFor(name), auth.Raw);
+            return (name, true);
+        }
+    }
+
     /// <summary>Папка с тем же account_id, иначе новое имя из email.</summary>
     public string NameFor(AuthFile auth, IDictionary<string, AuthFile> accounts)
     {
         foreach (var (n, a) in accounts)
             if (a.AccountId == auth.AccountId) return n;
         var local = auth.Email.Split('@')[0];
-        var baseName = Regex.Replace(local, @"[^\w.\-]+", "_");
-        if (baseName.Length == 0) baseName = auth.AccountId;
+        var baseName = Regex.Replace(local, @"[^\w.\-]+", "_").Trim('.');
+        if (baseName.Length == 0) baseName = Regex.Replace(auth.AccountId, @"[^\w\-]+", "_");
+        if (baseName.Length == 0) baseName = "account";
+        if (baseName.Length > 80) baseName = baseName[..80];
+        if (Regex.IsMatch(baseName, @"^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)", RegexOptions.IgnoreCase))
+            baseName = "account_" + baseName;
         var name = baseName;
-        if (accounts.ContainsKey(name) || Directory.Exists(System.IO.Path.Combine(Root, name)))
-            name = $"{baseName}_{auth.AccountId[..Math.Min(8, auth.AccountId.Length)]}";
+        for (var suffix = 2; accounts.ContainsKey(name) || Directory.Exists(System.IO.Path.Combine(Root, name)) || File.Exists(System.IO.Path.Combine(Root, name)); suffix++)
+            name = $"{baseName}_{suffix}";
         return name;
     }
 

@@ -15,6 +15,7 @@ sealed class SessionWindow : Form
     readonly string dataRoot;
     readonly string token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
     bool exiting, disposed;
+    bool openApplications;
     public SessionWindow(string codexHome, string claudeHome, string dataRoot, string? hermesHome = null, string? antigravityRoot = null)
     {
         this.dataRoot = dataRoot;
@@ -43,7 +44,7 @@ sealed class SessionWindow : Form
             core.NavigationStarting += (_, e) => { if (!IsLocal(new Uri(e.Uri))) e.Cancel = true; };
             core.NewWindowRequested += (_, e) => e.Handled = true;
             core.PermissionRequested += (_, e) => e.State = CoreWebView2PermissionState.Deny;
-            core.Navigate(Origin + "/");
+            core.Navigate(Origin + (openApplications?"/#apps":"/"));
         }
         catch (Exception e)
         {
@@ -105,6 +106,11 @@ sealed class SessionWindow : Form
     {
         Show(); if (WindowState == FormWindowState.Minimized) WindowState = FormWindowState.Normal;
         Activate();
+    }
+    public async void ShowApplications()
+    {
+        openApplications=true;ShowMain();
+        if(web.CoreWebView2!=null)await web.CoreWebView2.ExecuteScriptAsync("showApplications(true)");
     }
     public void Shutdown() { exiting = true; Close(); }
     protected override void Dispose(bool disposing)

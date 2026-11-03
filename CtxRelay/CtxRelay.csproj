@@ -10,7 +10,7 @@
     <Product>CtxRelay</Product>
     <Title>CtxRelay</Title>
     <Description>AI session and context manager</Description>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <ApplicationIcon>..\icon.ico</ApplicationIcon>
     <RootNamespace>CtxRelay</RootNamespace>
     <InvariantGlobalization>false</InvariantGlobalization>
@@ -27,5 +27,6 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.20" />
     <EmbeddedResource Include="Sessions/Web/**/*" />
     <EmbeddedResource Include="Sessions/session_import.md" />
+    <EmbeddedResource Include="../THIRD-PARTY-NOTICES.md" LogicalName="CtxRelay.ThirdPartyNotices.md" />
   </ItemGroup>
 </Project>

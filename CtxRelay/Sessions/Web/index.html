@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="__LANG__" data-locale="__LOCALE__" data-theme="dark">
+<html lang="__LANG__" data-locale="__LOCALE__" data-theme="graphite">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,11 +8,13 @@
   <link rel="icon" type="image/png" href="/static/icon.png">
   <link rel="stylesheet" href="/themes.css">
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/apps.css">
+  <link rel="stylesheet" href="/app-palettes.css">
 </head>
 <body>
   <header><div class="brand"><img class="logo" src="/static/icon.png" width="26" height="26" alt=""><div><b>CtxRelay</b><small data-i18n="library"></small></div></div>
-    <div class="top-actions"><span class="live" data-i18n="local"></span><select id="theme" data-i18n-aria="theme"><option value="dark">Dark</option><option value="light">Light</option><option value="hyper">Hyper</option><option value="graphite">Graphite</option></select><label><input id="auto" type="checkbox" checked> <span data-i18n="auto"></span></label><button id="refresh" data-i18n="refresh"></button></div></header>
-  <main>
+    <div class="top-actions"><button id="apps-toggle"></button><span class="live" data-i18n="local"></span><select id="theme" data-i18n-aria="theme"><option value="dark">Dark</option><option value="light">Light</option><option value="hyper">Hyper</option><option value="graphite">Graphite</option></select><label><input id="auto" type="checkbox" checked> <span data-i18n="auto"></span></label><button id="refresh" data-i18n="refresh"></button></div></header>
+  <main id="library-view">
     <aside>
       <div class="heading"><h1 data-i18n="sessions"></h1><span id="count">…</span></div>
       <input id="search" type="search" data-i18n-placeholder="contentPlaceholder" data-i18n-aria="search">
@@ -26,11 +28,13 @@
     </aside>
     <section id="detail"><div class="welcome"><span class="welcome-icon">⌘</span><h2 data-i18n="welcome"></h2><p data-i18n="welcomeHint"></p><div class="tags"><span>Codex</span><span>Claude Code</span><span>Hermes</span></div></div></section>
   </main>
+  <section id="apps-view" class="apps-view" hidden aria-labelledby="apps-title"></section>
   <div id="toast" role="status"></div>
   <dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-text"><form method="dialog"><h2 id="confirm-title" data-i18n="deleteSession"></h2><p id="confirm-text"></p><div class="dialog-actions"><button value="cancel" autofocus data-i18n="cancel"></button><button value="delete" class="danger" data-i18n="deleteSession"></button></div></form></dialog>
   <dialog id="source-dialog"><h2 data-i18n="localSources"></h2><div id="source-content"></div><p data-i18n="sourceHint"></p><button id="close-dialog" data-i18n="close"></button></dialog>
   <dialog id="batch-dialog"><h2 data-i18n="batchResultTitle"></h2><div id="batch-result"></div><button id="close-batch" data-i18n="close"></button></dialog>
   <script src="/i18n.js"></script>
   <script src="/app.js"></script>
+  <script src="/apps.js"></script>
 </body>
 </html>

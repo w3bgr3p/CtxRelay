@@ -243,7 +243,9 @@ setInterval(async()=>{
   try{const wasBusy=indexState.busy;const data=await api('/api/index');showIndex(data.index);if(wasBusy||data.index.busy)await searchContent();}catch(e){/* Normal refresh reports connection errors. */}finally{indexPollBusy=false;}
 },5000);
 let savedTheme;try{savedTheme=localStorage.getItem('clodex-theme');}catch(e){}
-if(['dark','light','hyper','graphite'].includes(savedTheme))$('#theme').value=savedTheme;
+$('#theme').insertAdjacentHTML('beforeend','<option value="graphite-light">Aluminium</option><option value="hyper-light">Paper</option>');
+$('#theme').value='graphite';
+if(['dark','light','hyper','graphite','graphite-light','hyper-light'].includes(savedTheme))$('#theme').value=savedTheme;
 document.documentElement.dataset.theme=$('#theme').value;
 $('#theme').addEventListener('change',()=>{document.documentElement.dataset.theme=$('#theme').value;try{localStorage.setItem('clodex-theme',$('#theme').value);}catch(e){}});
 const initial=new URLSearchParams(location.search);
